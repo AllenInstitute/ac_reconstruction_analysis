@@ -50,8 +50,8 @@ def write_segprops(segpropspath, axonList):
                       "all"], "values": [[0] for a in axonList]})
     info = {"@type": "neuroglancer_segment_properties",
             "inline": {"ids": ids, "properties": properties}}
-    with open(segpropspath / "info.json", "w+") as f:
-        json.dump(info, f, indent=4)
+    with open(segpropspath / "info", "w+") as f:
+        json.dump(info, f)
 
 
 def split_swc(swcfile, savedir, output="swc", minlength=1):
