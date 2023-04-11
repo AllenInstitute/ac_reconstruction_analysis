@@ -8,6 +8,7 @@ import pathlib
 import numpy as np
 import argschema
 import navis
+import json
 
 
 def get_tree_from_swc(swcfile):
@@ -25,17 +26,31 @@ def write_subtrees(treeNeuron, savedir='.', output="swc", minlength=1):
     for i, tree in enumerate(subtrees):
         if tree.shape[0] >= minlength:
             aid = str(tree[0])
-            swcname = aid + ".swc"
-            swcpath = savepath / swcname
             subtree = treeNodesById.loc[tree]
             axon = navis.TreeNeuron(subtree.reset_index())
             axon.id = aid
             if output == "swc":
+                swcname = aid + ".swc"
+                swcpath = savepath / swcname
                 axon.to_swc(swcpath)
             elif output == "precomputed":
                 axonList.append(axon)
     if output == "precomputed" and axonList:
         navis.write_precomputed(navis.NeuronList(axonList), savepath)
+        segpropspath = savepath / "segment_properties"
+        if not segpropspath.exists():
+            segpropspath.mkdir()
+        write_segprops(segpropspath, axonList)
+
+
+def write_segprops(segpropspath, axonList):
+    ids = [str(a.id) for a in axonList]
+    properties = []
+    properties.append({"id": "tags", "type": "tags", "tags": [
+                      "all"], "values": [[0] for a in axonList]})
+    info = {"@type": "neuroglancer_segment_properties",
+            "inline": {"ids": ids, "properties": properties}}
+    json.dump(info, segpropspath / "info.json", indent=4)
 
 
 def split_swc(swcfile, savedir, output="swc", minlength=1):
