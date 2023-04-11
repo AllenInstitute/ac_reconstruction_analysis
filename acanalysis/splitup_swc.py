@@ -5,7 +5,6 @@ Created on Tue Apr  4 09:44:58 2023
 @author: kevint
 """
 import pathlib
-import numpy as np
 import argschema
 import navis
 import json
@@ -16,7 +15,8 @@ def get_tree_from_swc(swcfile):
     return tree
 
 
-def write_subtrees(treeNeuron, savedir='.', output="swc", minlength=1):
+def write_subtrees(treeNeuron, savedir='.', output="swc", minlength=1,
+                   skel_voxel_nm=(1, 1, 1)):
     savepath = pathlib.Path(savedir)
     if not savepath.exists():
         savepath.mkdir(parents=True)
@@ -37,10 +37,22 @@ def write_subtrees(treeNeuron, savedir='.', output="swc", minlength=1):
                 axonList.append(axon)
     if output == "precomputed" and axonList:
         navis.write_precomputed(navis.NeuronList(axonList), savepath)
+
         segpropspath = savepath / "segment_properties"
         if not segpropspath.exists():
             segpropspath.mkdir()
         write_segprops(segpropspath, axonList)
+
+
+def write_info(savepath, voxel_nm):
+    infofile = savepath / "info"
+    with open(infofile) as f:
+        info = json.load(f)
+    info["transform"] = [voxel_nm[0], 0, 0, 0, 0,
+                         voxel_nm[1], 0, 0, 0, 0, voxel_nm[2], 0]
+    info["segment_properties"] = "segment_properties"
+    with open(infofile, "w+") as f:
+        json.dump(info, f)
 
 
 def write_segprops(segpropspath, axonList):
@@ -54,13 +66,21 @@ def write_segprops(segpropspath, axonList):
         json.dump(info, f)
 
 
-def split_swc(swcfile, savedir, output="swc", minlength=1):
+def split_swc(swcfile, savedir, output="swc", minlength=1, **kwargs):
     treeNeuron = get_tree_from_swc(swcfile)
     write_subtrees(treeNeuron, savedir=savedir,
-                   output=output, minlength=minlength)
+                   output=output, minlength=minlength,
+                   **kwargs)
 
 
-class SplitSWCInputParameters(argschema.ArgSchema, argschema.schemas.DefaultSchema):
+class SkeletonProperties(argschema.schemas.DefaultSchema):
+    voxel_nm = argschema.fields.Tuple((
+        argschema.fields.Int(),
+        argschema.fields.Int(),
+        argschema.fields.Int()), required=False, default=(1, 1, 1))
+
+
+class SplitSWCInputParameters(argschema.ArgSchema, SkeletonProperties):
     input_swc = argschema.fields.Str(required=True)
     output_dir = argschema.fields.Str(required=True)
     output_format = argschema.fields.Str(required=False, default="swc")
@@ -75,7 +95,8 @@ class SplitSWCParser(argschema.ArgSchemaParser):
             self.args["input_swc"],
             self.args["output_dir"],
             output=self.args["output_format"],
-            minlength=self.args["minimum_length"])
+            minlength=self.args["minimum_length"],
+            skel_voxel_nm=self.args["voxel_nm"])
 
 
 if __name__ == "__main__":
