@@ -34,34 +34,34 @@ def get_scale_dims(zparams):
     return scaleDims
 
 
-def get_tr_matrix(zparams):
+def get_tr_matrix(zparams,offset):
     trList = zparams["translation"]
     trM = [
         [
             1,
             0,
             0,
-            trList[0]
+            trList[0] + offset[0]
         ],
         [
             0,
             1,
             0,
-            trList[1]
+            trList[1] + offset[1]
         ],
         [
             0,
             0,
             1,
-            trList[2]
+            trList[2] + offset[2]
         ]
     ]
     return trM
 
 
-def create_seg_layer(precompDir, zparams):
+def create_seg_layer(precompDir, zparams, cutout_zyx=[0,0,0]):
     scaleDims = get_scale_dims(zparams)
-    trMatrix = get_tr_matrix(zparams)
+    trMatrix = get_tr_matrix(zparams,offset=cutout_zyx)
     slayer = {
         "type": "segmentation",
         "source": {
@@ -79,16 +79,23 @@ def create_seg_layer(precompDir, zparams):
     return slayer
 
 
-def write_swc_state(zarrFile, precompDir, outputFile):
+def write_swc_state(zarrFile, precompDir, outputFile, **kwargs):
     zpath = pathlib.Path(zarrFile)
     if zpath.exists():
         zparams = get_zarr_params(zpath)
-        slayer = create_seg_layer(precompDir, zparams)
+        slayer = create_seg_layer(precompDir, zparams, **kwargs)
         with open(outputFile, "w+") as f:
             json.dump(slayer, f, indent=4)
+            
+            
+class SwcCoordinateParameters(argschema.schemas.DefaultSchema):
+    cutout_zyx = argschema.fields.List((
+        argschema.fields.Int(),
+        argschema.fields.Int(),
+        argschema.fields.Int()), required=False, default=[0, 0, 0])
 
 
-class WriteSwcNgStateInputParameters(argschema.ArgSchema, argschema.schemas.DefaultSchema):
+class WriteSwcNgStateInputParameters(argschema.ArgSchema, SwcCoordinateParameters):
     zarr_file = argschema.fields.Str(required=True)
     precomputed_dir = argschema.fields.Str(required=True)
     output_file = argschema.fields.Str(required=True)
@@ -101,7 +108,8 @@ class WriteSwcNgStateParser(argschema.ArgSchemaParser):
         write_swc_state(
             self.args["zarr_file"],
             self.args["precomputed_dir"],
-            self.args["output_file"])
+            self.args["output_file"],
+            cutout_zyx = self.args["cutout_zyx"])
 
 
 if __name__ == "__main__":
