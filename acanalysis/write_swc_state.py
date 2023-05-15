@@ -85,7 +85,7 @@ def write_swc_state(zarrFile, precompDir, outputFile):
         zparams = get_zarr_params(zpath)
         slayer = create_seg_layer(precompDir, zparams)
         with open(outputFile, "w+") as f:
-            json.dump(slayer, f)
+            json.dump(slayer, f, indent=4)
 
 
 class WriteSwcNgStateInputParameters(argschema.ArgSchema, argschema.schemas.DefaultSchema):
