@@ -90,7 +90,7 @@ def write_swc_state(zarrFile, precompDir, outputFile, **kwargs):
 
 class SwcCoordinateParameters(argschema.schemas.DefaultSchema):
     cutout_zyx = argschema.fields.List(
-        argschema.fields.Int(), required=False, default=[0, 0, 0])
+        argschema.fields.Int(), cli_as_single_argument=True, required=False, default=[0, 0, 0])
 
 
 class WriteSwcNgStateInputParameters(argschema.ArgSchema, SwcCoordinateParameters):
