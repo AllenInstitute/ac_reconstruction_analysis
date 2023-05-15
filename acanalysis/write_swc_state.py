@@ -34,7 +34,7 @@ def get_scale_dims(zparams):
     return scaleDims
 
 
-def get_tr_matrix(zparams,offset):
+def get_tr_matrix(zparams, offset):
     trList = zparams["translation"]
     trM = [
         [
@@ -59,9 +59,9 @@ def get_tr_matrix(zparams,offset):
     return trM
 
 
-def create_seg_layer(precompDir, zparams, cutout_zyx=[0,0,0]):
+def create_seg_layer(precompDir, zparams, cutout_zyx=[0, 0, 0]):
     scaleDims = get_scale_dims(zparams)
-    trMatrix = get_tr_matrix(zparams,offset=cutout_zyx)
+    trMatrix = get_tr_matrix(zparams, offset=cutout_zyx)
     slayer = {
         "type": "segmentation",
         "source": {
@@ -86,13 +86,11 @@ def write_swc_state(zarrFile, precompDir, outputFile, **kwargs):
         slayer = create_seg_layer(precompDir, zparams, **kwargs)
         with open(outputFile, "w+") as f:
             json.dump(slayer, f, indent=4)
-            
-            
+
+
 class SwcCoordinateParameters(argschema.schemas.DefaultSchema):
-    cutout_zyx = argschema.fields.List((
-        argschema.fields.Int(),
-        argschema.fields.Int(),
-        argschema.fields.Int()), required=False, default=[0, 0, 0])
+    cutout_zyx = argschema.fields.List(
+        argschema.fields.Int(), required=False, default=[0, 0, 0])
 
 
 class WriteSwcNgStateInputParameters(argschema.ArgSchema, SwcCoordinateParameters):
@@ -109,7 +107,7 @@ class WriteSwcNgStateParser(argschema.ArgSchemaParser):
             self.args["zarr_file"],
             self.args["precomputed_dir"],
             self.args["output_file"],
-            cutout_zyx = self.args["cutout_zyx"])
+            cutout_zyx=self.args["cutout_zyx"])
 
 
 if __name__ == "__main__":
