@@ -36,7 +36,16 @@ def write_cutout_to_tiff(tiffpath,
                          ylength,
                          xstart,
                          xlength):
-    pass
+    dsdims = dataset.shape
+    if zlength < 1:
+        zlength = dsdims[2] - zstart
+    if ylength < 1:
+        ylength = dsdims[3] - ystart
+    if xlength < 1:
+        xlength = dsdims[4] - xstart
+    for i in range(zlength):
+        frame = dataset[0,0,zstart+i,ystart:ystart+ylength,xstart:xstart+xlength]
+        imsave(tiffpath,frame,append=True,bigtiff=True)
 
 
 def get_zarr_group(zpath, grpname):
