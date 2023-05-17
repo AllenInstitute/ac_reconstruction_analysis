@@ -28,7 +28,14 @@ def write_cutout_metadata(jsonpath,
         json.dump(js,f,indent=4)
 
 
-def write_cutout_to_tiff(tiffpath, dataset, zstart, zend, ystart, yend, xstart, xend):
+def write_cutout_to_tiff(tiffpath,
+                         dataset,
+                         zstart,
+                         zlength,
+                         ystart,
+                         ylength,
+                         xstart,
+                         xlength):
     pass
 
 
