@@ -9,7 +9,7 @@ import argschema
 import json
 import zarr
 import numpy as np
-from skimage.external.tifffile import imsave
+from skimage.io import imsave
 
 
 def write_cutout_metadata(jsonpath,
