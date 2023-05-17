@@ -59,8 +59,11 @@ def get_tr_matrix(zparams, offset):
     return trM
 
 
-def create_seg_layer(precompDir, zparams, cutout_zyx=[0, 0, 0]):
-    scaleDims = get_scale_dims(zparams)
+def create_seg_layer(precompDir, zparams, cutout_zyx=None, scale_zyx=None):
+    if cutout_zyx is None:
+        cutout_zyx = [0,0,0]
+    if scale_zyx is None:
+        scale_zyx = get_scale_dims(zparams)
     trMatrix = get_tr_matrix(zparams, offset=cutout_zyx)
     slayer = {
         "type": "segmentation",
@@ -68,8 +71,8 @@ def create_seg_layer(precompDir, zparams, cutout_zyx=[0, 0, 0]):
             "url": precompDir,
             "transform": {
                 "matrix": trMatrix,
-                "outputDimensions": scaleDims,
-                "inputDimensions": scaleDims
+                "outputDimensions": scale_zyx,
+                "inputDimensions": scale_zyx
             }
         },
         "tab": "source",
@@ -90,7 +93,9 @@ def write_swc_state(zarrFile, tileGroup, precompDir, outputFile, **kwargs):
 
 class SwcCoordinateParameters(argschema.schemas.DefaultSchema):
     cutout_zyx = argschema.fields.List(
-        argschema.fields.Int(), cli_as_single_argument=True, required=False, default=[0, 0, 0])
+        argschema.fields.Int(), cli_as_single_argument=True, required=False, default=None)
+    scale_zyx_um = argschema.fields.List(
+        argschema.fields.Float(), cli_as_single_argument=True, required=False, default=None)
 
 
 class WriteSwcNgStateInputParameters(argschema.ArgSchema, SwcCoordinateParameters):
@@ -109,7 +114,9 @@ class WriteSwcNgStateParser(argschema.ArgSchemaParser):
             self.args["tile_group"],
             self.args["precomputed_dir"],
             self.args["output_file"],
-            cutout_zyx=self.args["cutout_zyx"])
+            cutout_zyx=self.args["cutout_zyx"],
+            scale_zyx=self.args["scale_zyx_um"]
+            )
 
 
 if __name__ == "__main__":
