@@ -12,9 +12,9 @@ import zarr
 import numpy as np
 
 
-def get_zarr_params(zpath):
+def get_zarr_params(zpath,grp):
     zf = zarr.open(zpath)
-    attrs = zf.attrs.asdict()
+    attrs = zf[grp].attrs.asdict()
     grptr = attrs['multiscales'][0]['coordinateTransformations'][0]['translation']
     mipsc = attrs['multiscales'][0]['datasets'][0]['coordinateTransformations'][0]['scale']
     params = {
@@ -79,10 +79,10 @@ def create_seg_layer(precompDir, zparams, cutout_zyx=[0, 0, 0]):
     return slayer
 
 
-def write_swc_state(zarrFile, precompDir, outputFile, **kwargs):
+def write_swc_state(zarrFile, tileGroup, precompDir, outputFile, **kwargs):
     zpath = pathlib.Path(zarrFile)
     if zpath.exists():
-        zparams = get_zarr_params(zpath)
+        zparams = get_zarr_params(zpath,tileGroup)
         slayer = create_seg_layer(precompDir, zparams, **kwargs)
         with open(outputFile, "w+") as f:
             json.dump(slayer, f, indent=4)
@@ -95,6 +95,7 @@ class SwcCoordinateParameters(argschema.schemas.DefaultSchema):
 
 class WriteSwcNgStateInputParameters(argschema.ArgSchema, SwcCoordinateParameters):
     zarr_file = argschema.fields.Str(required=True)
+    tile_group = argschema.fields.Str(required=True)
     precomputed_dir = argschema.fields.Str(required=True)
     output_file = argschema.fields.Str(required=True)
 
@@ -105,6 +106,7 @@ class WriteSwcNgStateParser(argschema.ArgSchemaParser):
     def run(self):
         write_swc_state(
             self.args["zarr_file"],
+            self.args["tile_group"],
             self.args["precomputed_dir"],
             self.args["output_file"],
             cutout_zyx=self.args["cutout_zyx"])
