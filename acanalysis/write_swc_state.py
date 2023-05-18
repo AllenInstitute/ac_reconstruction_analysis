@@ -8,24 +8,24 @@ Created on Thu May 11 10:45:34 2023
 import pathlib
 import argschema
 import json
-import zarr
-import numpy as np
+# import zarr
+from utils import get_zarr_params
 
 
-def get_zarr_params(zpath,grp):
-    zf = zarr.open(zpath)
-    attrs = zf[grp].attrs.asdict()
-    grptr = attrs['multiscales'][0]['coordinateTransformations'][0]['translation']
-    mipsc = attrs['multiscales'][0]['datasets'][0]['coordinateTransformations'][0]['scale']
-    params = {
-        "scale": [mipsc[i] for i in range(2, 5)],
-        "translation": [int(grptr[i]/mipsc[i]) for i in range(2, 5)]
-    }
-    return params
+# def get_zarr_params(zpath,grp):
+#     zf = zarr.open(zpath)
+#     attrs = zf[grp].attrs.asdict()
+#     grptr = attrs['multiscales'][0]['coordinateTransformations'][0]['translation']
+#     mipsc = attrs['multiscales'][0]['datasets'][0]['coordinateTransformations'][0]['scale']
+#     params = {
+#         "scale": [mipsc[i] for i in range(2, 5)],
+#         "translation": [int(grptr[i]/mipsc[i]) for i in range(2, 5)]
+#     }
+#     return params
 
 
 def get_scale_dims(zparams):
-    sc = zparams["scale"]
+    sc = zparams.scale
     scaleDims = {
         "z": [sc[0], "um"],
         "y": [sc[1], "um"],
@@ -35,7 +35,7 @@ def get_scale_dims(zparams):
 
 
 def get_tr_matrix(zparams, offset):
-    trList = zparams["translation"]
+    trList = zparams.translation
     trM = [
         [
             1,
@@ -60,10 +60,11 @@ def get_tr_matrix(zparams, offset):
 
 
 def create_seg_layer(precompDir, zparams, cutout_zyx=None, scale_zyx=None):
+    scaleDims = get_scale_dims(zparams)
     if cutout_zyx is None:
         cutout_zyx = [0,0,0]
     if scale_zyx is None:
-        scale_zyx = get_scale_dims(zparams)
+        scale_zyx = scaleDims
     trMatrix = get_tr_matrix(zparams, offset=cutout_zyx)
     slayer = {
         "type": "segmentation",
@@ -71,7 +72,7 @@ def create_seg_layer(precompDir, zparams, cutout_zyx=None, scale_zyx=None):
             "url": precompDir,
             "transform": {
                 "matrix": trMatrix,
-                "outputDimensions": scale_zyx,
+                "outputDimensions": scaleDims,
                 "inputDimensions": scale_zyx
             }
         },

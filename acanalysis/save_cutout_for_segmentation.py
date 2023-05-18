@@ -7,9 +7,9 @@ Created on Tue May 16 15:45:56 2023
 import pathlib
 import argschema
 import json
-import zarr
-import numpy as np
+# import zarr
 from skimage.io import imsave
+from utils import get_zarr_params, get_zarr_group
 
 
 def write_cutout_metadata(jsonpath,
@@ -18,11 +18,16 @@ def write_cutout_metadata(jsonpath,
                           zstart,
                           ystart,
                           xstart,
+                          dsfactor,
                           **kwargs):
+    zparams = get_zarr_params(zarrFile,tileGroup)
+    zscale = zparams.scale
+    scale_zyx = [zs*dsfactor for zs in zscale]
     js = {
         "zarr_file": zarrFile,
         "tile_group": tileGroup,
-        "cutout_zyx": [zstart,ystart,xstart]
+        "cutout_zyx": [zstart,ystart,xstart],
+        "scale_zyx": scale_zyx
         }
     with open(jsonpath,"w+") as f:
         json.dump(js,f,indent=4)
@@ -35,7 +40,8 @@ def write_cutout_to_tiff(tiffpath,
                          ystart,
                          ylength,
                          xstart,
-                         xlength):
+                         xlength,
+                         dsfactor):
     dsdims = dataset.shape
     if zlength < 1:
         zlength = dsdims[2] - zstart
@@ -48,11 +54,11 @@ def write_cutout_to_tiff(tiffpath,
         imsave(tiffpath,frame,append=True,bigtiff=True)
 
 
-def get_zarr_group(zpath, grpname):
-    # key to working with zarr files
-    # group contains mip datasets and dataset attributes
-    zf = zarr.open(zpath)
-    return zf[grpname]
+# def get_zarr_group(zpath, grpname):
+#     # key to working with zarr files
+#     # group contains mip datasets and dataset attributes
+#     zf = zarr.open(zpath)
+#     return zf[grpname]
 
 
 def get_lvl0_dataset(zpath,grp):
@@ -82,6 +88,7 @@ class CutoutParameters(argschema.schemas.DefaultSchema):
     y_length = argschema.fields.Int(required=False, default=0)
     x_start = argschema.fields.Int(required=False, default=0)
     x_length = argschema.fields.Int(required=False, default=0)
+    downsample_factor = argschema.fields.Int(required=False, default=1)
 
 
 class CreateCutoutInputParameters(argschema.ArgSchema, CutoutParameters):
@@ -107,7 +114,8 @@ class CreateCutoutParser(argschema.ArgSchemaParser):
             ystart = self.args["y_start"],
             ylength = self.args["y_length"],
             xstart = self.args["x_start"],
-            xlength = self.args["x_length"]
+            xlength = self.args["x_length"],
+            dsfactor = self.args["downsample_factor"]
             )
 
 
