@@ -8,8 +8,8 @@ import pathlib
 import argschema
 import json
 # import zarr
-from skimage.io import imsave
-from utils import get_zarr_params, get_zarr_group
+# from skimage.io import imsave
+from utils import get_zarr_params, get_zarr_group, write_tiff_vol_append
 
 
 def write_cutout_metadata(jsonpath,
@@ -49,9 +49,10 @@ def write_cutout_to_tiff(tiffpath,
         ylength = dsdims[3] - ystart
     if xlength < 1:
         xlength = dsdims[4] - xstart
-    for i in range(zlength):
-        frame = dataset[0,0,zstart+i,ystart:ystart+ylength,xstart:xstart+xlength]
-        imsave(tiffpath,frame,append=True,bigtiff=True)
+    write_tiff_vol_append(tiffpath,dataset,zstart,zlength,ystart,ylength,xstart,xlength)
+    # for i in range(zlength):
+    #     frame = dataset[0,0,zstart+i,ystart:ystart+ylength,xstart:xstart+xlength]
+    #     imsave(tiffpath,frame,append=True,bigtiff=True)
 
 
 # def get_zarr_group(zpath, grpname):

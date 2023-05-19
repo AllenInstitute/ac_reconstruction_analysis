@@ -6,6 +6,7 @@ Created on Thu May 18 10:01:37 2023
 """
 import zarr
 import dataclasses
+from skimage.io import imsave
 
 
 @dataclasses.dataclass
@@ -30,3 +31,10 @@ def get_zarr_params(zpath,grp):
     zparams.scale = [mipsc[i] for i in range(2, 5)]
     zparams.translation = [int(grptr[i]/mipsc[i]) for i in range(2, 5)]
     return zparams
+
+
+#TODO: replace with acpreprocessing.io function
+def write_tiff_vol_append(tiffpath,dataset,zstart,zlength,ystart,ylength,xstart,xlength):
+    for i in range(zlength):
+        frame = dataset[0,0,zstart+i,ystart:ystart+ylength,xstart:xstart+xlength]
+        imsave(tiffpath,frame,append=True,bigtiff=True)
