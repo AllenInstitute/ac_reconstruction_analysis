@@ -60,11 +60,18 @@ def get_tr_matrix(zparams, offset):
 
 
 def create_seg_layer(precompDir, zparams, cutout_zyx=None, scale_zyx=None):
-    scaleDims = get_scale_dims(zparams)
+    outputDims = get_scale_dims(zparams)
     if cutout_zyx is None:
         cutout_zyx = [0,0,0]
     if scale_zyx is None:
-        scale_zyx = scaleDims
+        inputDims = outputDims
+    else:
+        inputDims = {
+            "z": [scale_zyx[0], "um"],
+            "y": [scale_zyx[1], "um"],
+            "x": [scale_zyx[2], "um"]
+        }
+        
     trMatrix = get_tr_matrix(zparams, offset=cutout_zyx)
     slayer = {
         "type": "segmentation",
@@ -72,8 +79,8 @@ def create_seg_layer(precompDir, zparams, cutout_zyx=None, scale_zyx=None):
             "url": precompDir,
             "transform": {
                 "matrix": trMatrix,
-                "outputDimensions": scaleDims,
-                "inputDimensions": scale_zyx
+                "outputDimensions": outputDims,
+                "inputDimensions": inputDims
             }
         },
         "tab": "source",
