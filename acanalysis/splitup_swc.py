@@ -23,6 +23,11 @@ def get_tree_from_swc(swcfile):
     return tree
 
 
+def get_axon_list_from_zip(zipfile):
+    swcs = navis.read_swc(zipfile,include_subdirs=True)
+    return [axon for axon in swcs]
+
+
 def write_subtrees(treeNeuron, savedir='.', output="swc", minlength=1,
                    skel_voxel_nm=(1, 1, 1)):
     savepath = pathlib.Path(savedir)
@@ -44,12 +49,16 @@ def write_subtrees(treeNeuron, savedir='.', output="swc", minlength=1,
             elif output == "precomputed":
                 axonList.append(axon)
     if output == "precomputed" and axonList:
-        navis.write_precomputed(navis.NeuronList(axonList), savepath)
-        write_info(savepath, skel_voxel_nm)
-        segpropspath = savepath / "segment_properties"
-        if not segpropspath.exists():
-            segpropspath.mkdir()
-        write_segprops(segpropspath, axonList)
+        write_precomputed(axonList,savepath,skel_voxel_nm)
+        
+        
+def write_precomputed(axonList,savepath,skel_voxel_nm=(1, 1, 1)):
+    navis.write_precomputed(navis.NeuronList(axonList), savepath)
+    write_info(savepath, skel_voxel_nm)
+    segpropspath = savepath / "segment_properties"
+    if not segpropspath.exists():
+        segpropspath.mkdir()
+    write_segprops(segpropspath, axonList)
 
 
 def write_info(savepath, voxel_nm):
