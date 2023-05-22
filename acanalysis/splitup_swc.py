@@ -53,6 +53,8 @@ def write_subtrees(treeNeuron, savedir='.', output="swc", minlength=1,
         
         
 def write_precomputed(axonList,savepath,skel_voxel_nm=(1, 1, 1)):
+    if not savepath.exists():
+        savepath.mkdir(parents=True)
     navis.write_precomputed(navis.NeuronList(axonList), savepath)
     write_info(savepath, skel_voxel_nm)
     segpropspath = savepath / "segment_properties"
