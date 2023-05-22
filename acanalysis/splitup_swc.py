@@ -10,6 +10,14 @@ import navis
 import json
 
 
+# example cmd input
+# python splitup_swc.py
+# --input_swc /ACdata/Users/kevin/skeletons/olga_swc/H17_x55_S32_S33/S33_highres_Pos41.swc
+# --output_dir /ACdata/Users/kevin/skeletons/precomputed/H17_x55/S33_highres_Pos41
+# --output_format precomputed
+
+
+
 def get_tree_from_swc(swcfile):
     tree = navis.read_swc(swcfile)
     return tree

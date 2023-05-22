@@ -12,6 +12,14 @@ import json
 from utils import get_zarr_params
 
 
+# example cmd input
+# python write_swc_state.py
+# --precomputed_dir precomputed://http://bigkahuna.corp.alleninstitute.org/ACdata/Users/kevin/skeletons/precomputed/H17_x55/S32_highres_Pos78
+# --output_file /ACdata/Users/kevin/skeletons/S32_Pos78.json 
+# --scale_zyx_um [0.704,0.812,0.812]
+# --input_json /ACdata/Users/kevin/tiffs/S32_highres_Pos78.json
+
+
 # def get_zarr_params(zpath,grp):
 #     zf = zarr.open(zpath)
 #     attrs = zf[grp].attrs.asdict()

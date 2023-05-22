@@ -12,6 +12,17 @@ import json
 from utils import get_zarr_params, get_zarr_group, write_tiff_vol_append
 
 
+# example cmd input
+# python save _cutout_for_segmentation.py
+# --zarr_file /ACdata/Users/kevin/ispim_ome_zarr/H17_x55_S32_230412_highres/H17_x55_S32_230412_highres.zarr
+# --tile_group highres_Pos79
+# --output_file /ACdata/Users/kevin/tiffs/S32_Pos79.tif
+# --output_format tif
+# --output_json /ACdata/Users/kevin/tiffs/S32_highres_Pos79_2.json
+# --z_start 24000
+# --z_length 4000
+
+
 def write_cutout_metadata(jsonpath,
                           zarrFile,
                           tileGroup,
