@@ -28,11 +28,7 @@ def get_axon_list_from_zip(zipfile):
     return [axon for axon in swcs]
 
 
-def write_subtrees(treeNeuron, savedir='.', output="swc", minlength=1,
-                   skel_voxel_nm=(1, 1, 1)):
-    savepath = pathlib.Path(savedir)
-    if not savepath.exists():
-        savepath.mkdir(parents=True)
+def get_axon_list_from_subtrees(treeNeuron,minlength=1):
     subtrees = treeNeuron.subtrees
     treeNodesById = treeNeuron.nodes.set_index("node_id")
     axonList = []
@@ -42,15 +38,27 @@ def write_subtrees(treeNeuron, savedir='.', output="swc", minlength=1,
             subtree = treeNodesById.loc[tree]
             axon = navis.TreeNeuron(subtree.reset_index())
             axon.id = aid
-            if output == "swc":
-                swcname = aid + ".swc"
-                swcpath = savepath / swcname
-                axon.to_swc(swcpath)
-            elif output == "precomputed":
-                axonList.append(axon)
-    if output == "precomputed" and axonList:
+            axonList.append(axon)
+    return axonList
+
+
+def write_subtrees(treeNeuron, savedir='.', output="swc", minlength=1,
+                   skel_voxel_nm=(1, 1, 1)):
+    savepath = pathlib.Path(savedir)
+    if not savepath.exists():
+        savepath.mkdir(parents=True)
+    axonList = get_axon_list_from_subtrees(treeNeuron,minlength)
+    if output == "swc":
+        write_swcs(axonList,savepath)
+    elif output == "precomputed" and axonList:
         write_precomputed(axonList,savepath,skel_voxel_nm)
         
+def write_swcs(axonList,savepath):
+    for axon in axonList:
+        aid = axon.id
+        swcname = aid + ".swc"
+        swcpath = savepath / swcname
+        axon.to_swc(swcpath)
         
 def write_precomputed(axonList,savepath,skel_voxel_nm=(1, 1, 1)):
     if not savepath.exists():
