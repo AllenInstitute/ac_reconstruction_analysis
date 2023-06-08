@@ -38,7 +38,7 @@ def write_cutout_metadata(jsonpath,
         "zarr_file": zarrFile,
         "tile_group": tileGroup,
         "cutout_zyx": [zstart,ystart,xstart],
-        "scale_zyx": scale_zyx
+        "scale_zyx_um": scale_zyx
         }
     with open(jsonpath,"w+") as f:
         json.dump(js,f,indent=4)
