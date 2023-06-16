@@ -6,16 +6,26 @@ Created on Tue Jun 13 21:17:11 2023
 """
 
 import numpy
-from keypoints import write_keypoints_to_file,read_keypoints
+from acanalysis.acalignment.keypoints import write_keypoints_to_file,read_keypoints
 from scipy.spatial import cKDTree
+from skimage.transform import SimilarityTransform
 
 
 def get_features_from_keypoints(kplist,axes=None,transforms=None):
-    #TODO: need to implement transforms
+    #2D rigid transformations input as list (fifo) of ndarrays with scikit for now
+    #TODO: need to implement transforms in mpyicbg
     locs = numpy.array([k.location for k in kplist])
     vecs = numpy.array([k.vector for k in kplist])
     if not axes is None:
         locs = locs[:,axes]
+    if not transforms is None:
+        rigidM = transforms[0]
+        if len(transforms) > 1:
+            for M in transforms[1:]:
+                rigidM = M @ rigidM
+        rigidT = SimilarityTransform(matrix=rigidM)
+        locs = rigidT.warp(locs)
+        vecs = rigidT.warp(vecs)
     return locs,vecs
 
 

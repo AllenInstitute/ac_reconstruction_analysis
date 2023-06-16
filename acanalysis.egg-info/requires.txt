@@ -1,3 +1,2 @@
 numpy
 navis
-scikit-image

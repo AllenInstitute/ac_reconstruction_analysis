@@ -9,7 +9,7 @@ import navis
 import numpy
 from scipy.interpolate import RegularGridInterpolator as RGI
 
-from keypoints import KeyPoint,write_keypoints_to_file
+from acanalysis.acalignment.keypoints import KeyPoint,write_keypoints_to_file
 
 def ori_lookup(ori):
     oriTuple = {
