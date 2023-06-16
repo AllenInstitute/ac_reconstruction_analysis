@@ -34,7 +34,7 @@ def write_cutout_metadata(jsonpath,
                           **kwargs):
     zparams = get_zarr_params(zarrFile,tileGroup)
     zscale = zparams.scale
-    scale_zyx = [zs*dsfactor for zs in zscale]
+    scale_zyx = [zs*dsfactor*(2**miplvl) for zs in zscale]
     js = {
         "zarr_file": zarrFile,
         "tile_group": tileGroup,
