@@ -26,6 +26,7 @@ from utils import get_zarr_params, get_zarr_group, write_tiff_vol_append
 def write_cutout_metadata(jsonpath,
                           zarrFile,
                           tileGroup,
+                          miplvl,
                           zstart,
                           ystart,
                           xstart,
@@ -37,6 +38,7 @@ def write_cutout_metadata(jsonpath,
     js = {
         "zarr_file": zarrFile,
         "tile_group": tileGroup,
+        "mip_lvl": miplvl,
         "cutout_zyx": [zstart,ystart,xstart],
         "scale_zyx_um": scale_zyx
         }
@@ -73,8 +75,8 @@ def write_cutout_to_tiff(tiffpath,
 #     return zf[grpname]
 
 
-def get_lvl0_dataset(zpath,grp):
-    ds = get_zarr_group(zpath,grp)[0]
+def get_miplvl_dataset(zpath,grp,miplvl=0):
+    ds = get_zarr_group(zpath,grp)[miplvl]
     return ds
 
 
@@ -83,10 +85,11 @@ def create_cutout_from_zarr(zarrFile,
                             outputFile,
                             outputFormat="tif",
                             mdpath="",
+                            miplvl=0,
                             **kwargs):
     zpath = pathlib.Path(zarrFile)
     if zpath.exists():
-        ds = get_lvl0_dataset(zarrFile,tileGroup)
+        ds = get_miplvl_dataset(zarrFile,tileGroup,miplvl)
         if outputFormat == "tif":
             write_cutout_to_tiff(outputFile,ds,**kwargs)
         if mdpath:
@@ -94,6 +97,7 @@ def create_cutout_from_zarr(zarrFile,
 
 
 class CutoutParameters(argschema.schemas.DefaultSchema):
+    mip_lvl = argschema.fields.Int(required=False, default=0)
     z_start = argschema.fields.Int(required=False, default=0)
     z_length = argschema.fields.Int(required=False, default=0)
     y_start = argschema.fields.Int(required=False, default=0)
@@ -121,6 +125,7 @@ class CreateCutoutParser(argschema.ArgSchemaParser):
             self.args["output_file"],
             outputFormat = self.args["output_format"],
             mdpath = self.args["output_json"],
+            miplvl = self.args["mip_lvl"],
             zstart = self.args["z_start"],
             zlength = self.args["z_length"],
             ystart = self.args["y_start"],
