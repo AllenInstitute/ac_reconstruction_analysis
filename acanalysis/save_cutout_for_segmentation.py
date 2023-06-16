@@ -93,7 +93,7 @@ def create_cutout_from_zarr(zarrFile,
         if outputFormat == "tif":
             write_cutout_to_tiff(outputFile,ds,**kwargs)
         if mdpath:
-            write_cutout_metadata(mdpath,zarrFile,tileGroup,**kwargs)
+            write_cutout_metadata(mdpath,zarrFile,tileGroup,miplvl,**kwargs)
 
 
 class CutoutParameters(argschema.schemas.DefaultSchema):
