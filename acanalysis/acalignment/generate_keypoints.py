@@ -10,6 +10,7 @@ import numpy
 from scipy.interpolate import RegularGridInterpolator as RGI
 
 from acanalysis.acalignment.keypoints import KeyPoint,write_keypoints_to_file
+from acanalysis.splitup_swc import get_axon_list_from_subtrees
 
 def ori_lookup(ori):
     oriTuple = {
@@ -20,7 +21,7 @@ def ori_lookup(ori):
 
 
 def keypoint_from_neuron(neuron, ori=None):
-    name = neuron.name
+    name = str(neuron.id)
     axis, sign, idx = ori_lookup(ori)
     endpts = numpy.vstack([neuron.leafs[["x", "y", "z"]], neuron.nodes[neuron.nodes.node_id == neuron.root.flatten()[0]][["x", "y", "z"]]])
     loc_func = {
@@ -64,14 +65,14 @@ def filter_surface_keypoints(KeyPtList,distance=0,ori=None,surf_map=None,**kwarg
     else:
         print("Interpolating surface map")
         interp = RGI((numpy.arange(surf_map.shape[0]),numpy.arange(surf_map.shape[1])),surf_map,method="nearest")
-    if sign == "POS":
+    if sign == "NEG":
         if surf_map is None:
             hmax = hlist.max()
             good = numpy.nonzero(hlist>=hmax-distance)[0]
         else:
             locs = numpy.array([keypt.location for keypt in KeyPtList])
             good = numpy.nonzero(locs[:,idx] >= interp(numpy.array([locs[:,indices[0]],locs[:,indices[1]]]).transpose()) - distance)[0]
-    elif sign == "NEG":
+    elif sign == "POS":
         if surf_map is None:
             hmin = hlist.min()
             good = numpy.nonzero(hlist<=hmin+distance)[0]
@@ -82,14 +83,16 @@ def filter_surface_keypoints(KeyPtList,distance=0,ori=None,surf_map=None,**kwarg
     return SurfList
 
     
-def generate_keypoint_file(swcpath,outputpath,ori=None,surf_file='',**kwargs):
+def generate_keypoint_file(swcpath,outputpath,ori=None,surf_file='',tile_name='',**kwargs):
     if surf_file:
         surf = numpy.load(surf_file)
     else:
         surf = None
-    skels = navis.read_swc(swcpath)
+    #swc_it = iterate_swc_chunks(swcpath)
+    #skels = navis.read_swc(swc_it)
+    skels = get_axon_list_from_subtrees(navis.read_swc(swcpath))
     neurons = filter_skeletons(skels,ori=ori,**kwargs)
     keypts = [keypoint_from_neuron(neuron,ori) for neuron in neurons]
     surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,**kwargs)
-    write_keypoints_to_file(surfkeypts,outputpath)
+    write_keypoints_to_file(surfkeypts,outputpath,tile_name)
 

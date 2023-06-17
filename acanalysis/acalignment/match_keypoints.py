@@ -8,7 +8,7 @@ Created on Tue Jun 13 21:17:11 2023
 import numpy
 from acanalysis.acalignment.keypoints import write_keypoints_to_file,read_keypoints
 from scipy.spatial import cKDTree
-from skimage.transform import SimilarityTransform
+from skimage.transform import matrix_transform
 
 
 def get_features_from_keypoints(kplist,axes=None,transforms=None):
@@ -23,9 +23,10 @@ def get_features_from_keypoints(kplist,axes=None,transforms=None):
         if len(transforms) > 1:
             for M in transforms[1:]:
                 rigidM = M @ rigidM
-        rigidT = SimilarityTransform(matrix=rigidM)
-        locs = rigidT.warp(locs)
-        vecs = rigidT.warp(vecs)
+        rotM = numpy.eye(3)
+        rotM[:2,:2] = rigidM[:2,:2]
+        locs = matrix_transform(locs,matrix=rigidM)
+        vecs[:,axes] = matrix_transform(vecs[:,axes],matrix=rotM)
     return locs,vecs
 
 
@@ -51,9 +52,16 @@ def match_keypoint_sets(kpset0,kpset1,axes=[1,2],affines0=None,affines1=None,knn
     return matchset0,matchset1,distancelist
 
 
-def run_match(kpfile0,kpfile1,output0,output1,affines0,affines1):
-    kpset0 = read_keypoints(kpfile0)
-    kpset1 = read_keypoints(kpfile1)
+def combine_tile_keypoints(kpfileList,offsetList):
+    kpList = []
+    for i,kpfile in enumerate(kpfileList):
+        kpList += read_keypoints(kpfile,locfunc=lambda x: x + numpy.array(offsetList[i]))
+    return kpList
+
+
+def run_match(kpfiles0,kpfiles1,offsets0,offsets1,output0,output1,affines0,affines1):
+    kpset0 = combine_tile_keypoints(kpfiles0,offsets0)
+    kpset1 = combine_tile_keypoints(kpfiles1,offsets1)
     matches0,matches1,distances = match_keypoint_sets(kpset0,kpset1,affines0=affines0,affines1=affines1)
     write_keypoints_to_file(matches0,output0)
     write_keypoints_to_file(matches1,output1)

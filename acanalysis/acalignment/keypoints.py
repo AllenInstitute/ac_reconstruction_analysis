@@ -31,14 +31,23 @@ class KeypointEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def write_keypoints_to_file(KeyPoints,jsonpath):
+def write_keypoints_to_file(KeyPoints,jsonpath,tilename=''):
+    if tilename:
+        for k in KeyPoints:
+            k.name = tilename + k.name
     with open(jsonpath,"w+") as f:
         json.dump(KeyPoints,f,cls=KeypointEncoder,indent=4)
         
 
-def read_keypoints(jsonpath):
+def read_keypoints(jsonpath,locfunc=None):
     with open(jsonpath) as f:
         js = json.load(f)
-    return [KeyPoint(name=d["name"],
-                     location=numpy.array(d["location"]),
-                     vector=numpy.array(d["vector"])) for d in js]
+    if locfunc is None:
+        kpList = [KeyPoint(name=d["name"],
+                           location=numpy.array(d["location"]),
+                           vector=numpy.array(d["vector"])) for d in js]
+    else:
+        kpList = [KeyPoint(name=d["name"],
+                           location=locfunc(numpy.array(d["location"])),
+                           vector=numpy.array(d["vector"])) for d in js]
+    return kpList
