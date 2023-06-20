@@ -30,9 +30,9 @@ def get_features_from_keypoints(kplist,axes=None,transforms=None):
     return locs,vecs
 
 
-def match_keypoint_sets(kpset0,kpset1,axes=[1,2],affines0=None,affines1=None,knn=10,kdtreeleafsize=50,mincosine=0.8):
-    pyz,pvecs = get_features_from_keypoints(kpset0,axes=axes,transforms=affines0)
-    qyz,qvecs = get_features_from_keypoints(kpset1,axes=axes,transforms=affines1)
+def match_keypoint_sets(kpset0,kpset1,axes=[1,2],tforms0=None,tforms1=None,knn=10,kdtreeleafsize=50,mincosine=0.8):
+    pyz,pvecs = get_features_from_keypoints(kpset0,axes=axes,transforms=tforms0)
+    qyz,qvecs = get_features_from_keypoints(kpset1,axes=axes,transforms=tforms1)
     
     qkdtree = cKDTree(qyz,leafsize=kdtreeleafsize)
     
@@ -46,7 +46,7 @@ def match_keypoint_sets(kpset0,kpset1,axes=[1,2],affines0=None,affines1=None,knn
         if any(cosines>=mincosine):
             iq = numpy.argmax(cosines)
             matchset0.append(kpset0[ip])
-            matchset1.append(kpset1[iq])
+            matchset1.append(kpset1[qinds[iq]])
             distancelist.append(qds[iq])
             
     return matchset0,matchset1,distancelist
@@ -59,9 +59,9 @@ def combine_tile_keypoints(kpfileList,offsetList):
     return kpList
 
 
-def run_match(kpfiles0,kpfiles1,offsets0,offsets1,output0,output1,affines0,affines1):
+def run_match(kpfiles0,kpfiles1,tforms0,tforms1,offsets0,offsets1,output0,output1,affines0,affines1):
     kpset0 = combine_tile_keypoints(kpfiles0,offsets0)
     kpset1 = combine_tile_keypoints(kpfiles1,offsets1)
-    matches0,matches1,distances = match_keypoint_sets(kpset0,kpset1,affines0=affines0,affines1=affines1)
+    matches0,matches1,distances = match_keypoint_sets(kpset0,kpset1,tforms0=tforms0,tforms1=tforms1)
     write_keypoints_to_file(matches0,output0)
     write_keypoints_to_file(matches1,output1)
