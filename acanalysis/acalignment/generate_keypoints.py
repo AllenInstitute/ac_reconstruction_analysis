@@ -65,14 +65,14 @@ def filter_surface_keypoints(KeyPtList,distance=0,ori=None,surf_map=None,**kwarg
     else:
         print("Interpolating surface map")
         interp = RGI((numpy.arange(surf_map.shape[0]),numpy.arange(surf_map.shape[1])),surf_map,method="nearest")
-    if sign == "NEG":
+    if sign == "POS":
         if surf_map is None:
             hmax = hlist.max()
             good = numpy.nonzero(hlist>=hmax-distance)[0]
         else:
             locs = numpy.array([keypt.location for keypt in KeyPtList])
             good = numpy.nonzero(locs[:,idx] >= interp(numpy.array([locs[:,indices[0]],locs[:,indices[1]]]).transpose()) - distance)[0]
-    elif sign == "POS":
+    elif sign == "NEG":
         if surf_map is None:
             hmin = hlist.min()
             good = numpy.nonzero(hlist<=hmin+distance)[0]

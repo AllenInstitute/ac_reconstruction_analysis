@@ -30,10 +30,11 @@ def get_features_from_keypoints(kplist,axes=None,transforms=None):
     return locs,vecs
 
 
-def match_keypoint_sets(kpset0,kpset1,axes=[1,2],tforms0=None,tforms1=None,knn=10,kdtreeleafsize=50,mincosine=0.8):
+def match_keypoint_sets(kpset0,kpset1,axes=[1,2],tforms0=None,tforms1=None,knn=None,rball=None,kdtreeleafsize=50,mincosine=0.8):
+    if knn is None and rball is None:
+        knn = 10
     pyz,pvecs = get_features_from_keypoints(kpset0,axes=axes,transforms=tforms0)
     qyz,qvecs = get_features_from_keypoints(kpset1,axes=axes,transforms=tforms1)
-    
     qkdtree = cKDTree(qyz,leafsize=kdtreeleafsize)
     
     matchset0 = []
@@ -41,7 +42,11 @@ def match_keypoint_sets(kpset0,kpset1,axes=[1,2],tforms0=None,tforms1=None,knn=1
     distancelist = []
     for ip in range(pyz.shape[0]):
         ploc = pyz[ip]
-        qds,qinds = qkdtree.query(ploc,k=knn)
+        if not rball is None:
+            qinds = numpy.array(qkdtree.query_ball_point(ploc,r=rball)).astype(int)
+            qds = numpy.linalg.norm(ploc - qyz[qinds],axis=1)
+        else:
+            qds,qinds = qkdtree.query(ploc,k=knn)
         cosines = numpy.array([numpy.dot(pvecs[ip],-qvecs[i]) for i in qinds])
         if any(cosines>=mincosine):
             iq = numpy.argmax(cosines)
