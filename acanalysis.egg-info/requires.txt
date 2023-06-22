@@ -1,2 +1,4 @@
 numpy
 navis
+argschema
+scikit-image

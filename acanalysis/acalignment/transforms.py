@@ -10,9 +10,8 @@ import numpy
 from mpyicbg.errors import MPYICBGError
 from mpyicbg.utils.utils import NullHandler
 from mpyicbg.utils.numpy_utils import get_random_state
-
 from mpyicbg.transformations import SimilarityModel2D
-import numpy
+from renderapi.transform.leaf import thin_plate_spline
 
 logger = logging.getLogger(__name__)
 logger.addHandler(NullHandler())
@@ -110,3 +109,9 @@ def ransac(candidates, epsilon, iterations=None,
             #        candidates[i] = d[best_inliers]
             #    best_model.estimate(*candidates)
     return best_model, best_inliers
+
+
+def tps_transform(srcpts,dstpts,computeAffine=True):
+    tps = thin_plate_spline.ThinPlateSplineTransform()
+    tps.estimate(srcpts,dstpts,computeAffine=computeAffine)
+    return tps
