@@ -33,7 +33,7 @@ def _always_true(*args, **kwargs):
 def ransac(candidates, epsilon, iterations=None,
            minNumInliers=None, maxNumInliers=numpy.inf,
            data_validator=_always_true, model_validator=_always_true,
-           stop_probability=1., random_state=None, **kwargs):
+           stop_probability=1., random_state=None, showProgress=False, **kwargs):
     if not is_iterable(candidates):
         raise ValueError("Invalid candidates of type {}".format(
             type(candidates)))
@@ -90,7 +90,8 @@ def ransac(candidates, epsilon, iterations=None,
         if (sample_inlier_num > best_inlier_num
             or (sample_inlier_num == best_inlier_num
                 and sample_model_residuals_sum < best_inlier_residuals_sum)):
-            print(sample_inlier_num)
+            if showProgress:
+                print(str(num_trial) + " : " + str(sample_inlier_num))
             best_model = sample_model
             best_inlier_num = sample_inlier_num
             best_inlier_residuals_sum = sample_model_residuals_sum
