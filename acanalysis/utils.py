@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May 18 10:01:37 2023
+""" utility functions for reading zarr data and metadata, and writing multi-page tifs
 
-@author: kevint
 """
 import zarr
 import dataclasses
@@ -20,6 +17,11 @@ def get_zarr_group(zpath, grpname):
     # group contains mip datasets and dataset attributes
     zf = zarr.open(zpath)
     return zf[grpname]
+
+
+def get_miplvl_dataset(zpath,grp,miplvl=0):
+    ds = get_zarr_group(zpath,grp)[miplvl]
+    return ds
 
 
 def get_zarr_params(zpath,grp):

@@ -1,26 +1,27 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue May 16 15:45:56 2023
+""" Save cutout from zarr tile group as tiff stack for segmentation
 
-@author: kevint
 """
 import pathlib
 import argschema
 import json
-# import zarr
-# from skimage.io import imsave
-from utils import get_zarr_params, get_zarr_group, write_tiff_vol_append
+from utils import get_zarr_params, get_miplvl_dataset, write_tiff_vol_append
 
 
-# example cmd input
-# python save _cutout_for_segmentation.py
-# --zarr_file /ACdata/Users/kevin/ispim_ome_zarr/H17_x55_S32_230412_highres/H17_x55_S32_230412_highres.zarr
-# --tile_group highres_Pos79
-# --output_file /ACdata/Users/kevin/tiffs/S32_Pos79.tif
-# --output_format tif
-# --output_json /ACdata/Users/kevin/tiffs/S32_highres_Pos79_2.json
-# --z_start 24000
-# --z_length 4000
+example_input = {
+    "zarr_file": "/ACdata/Users/kevin/ispim_ome_zarr/H17_x55_S32_230412_highres/H17_x55_S32_230412_highres.zarr",
+    "tile_group": "highres_Pos79",
+    "output_file": "/ACdata/Users/kevin/tiffs/S32_Pos79.tif",
+    "output_format": "tif",
+    "output_json": "/ACdata/Users/kevin/tiffs/S32_highres_Pos79_2.json",
+    "mip_lvl": 0,
+    "z_start": 24000,
+    "z_length": 4000,
+    "y_start": 0,
+    "y_length": 400,
+    "x_start": 0,
+    "x_length": 576,
+    "downsample_factor": 1
+    }
 
 
 def write_cutout_metadata(jsonpath,
@@ -32,6 +33,27 @@ def write_cutout_metadata(jsonpath,
                           xstart,
                           dsfactor,
                           **kwargs):
+    """write metadata .json file with cutout parameters 
+
+    Parameters
+    ----------
+    jsonpath : str
+        path string to output .json
+    zarrFile : str
+        path string to image data source zarr
+    tileGroup : str
+        name of zarr group containing position source data
+    miplvl : int
+        mip dataset level
+    zstart : int
+        cutout starting index axis 0
+    ystart : int
+        cutout starting index axis 1
+    xstart : int
+        cutout starting index axis 2
+    dsfactor : int
+        additional downsampling on top of mip
+    """
     zparams = get_zarr_params(zarrFile,tileGroup)
     zscale = zparams.scale
     scale_zyx = [zs*dsfactor*(2**miplvl) for zs in zscale]
@@ -55,6 +77,33 @@ def write_cutout_to_tiff(tiffpath,
                          xstart,
                          xlength,
                          dsfactor):
+    """write tiff stack from cutout of zarr dataset 
+
+    Parameters
+    ----------
+    tiffpath : str
+        path string to output .tif file
+    dataset : zarr.dataset
+        source dataset for cutout
+    tileGroup : str
+        name of zarr group containing position source data
+    miplvl : int
+        mip dataset level
+    zstart : int
+        cutout starting index axis 0
+    zlength : int
+        cutout range axis 0
+    ystart : int
+        cutout starting index axis 1
+    ylength : int
+        cutout range axis 1
+    xstart : int
+        cutout starting index axis 2
+    xlength : int
+        cutout range axis 2
+    dsfactor : int
+        additional downsampling on top of mip (not yet implemented)
+    """
     dsdims = dataset.shape
     if zlength < 1:
         zlength = dsdims[2] - zstart
@@ -63,21 +112,6 @@ def write_cutout_to_tiff(tiffpath,
     if xlength < 1:
         xlength = dsdims[4] - xstart
     write_tiff_vol_append(tiffpath,dataset,zstart,zlength,ystart,ylength,xstart,xlength)
-    # for i in range(zlength):
-    #     frame = dataset[0,0,zstart+i,ystart:ystart+ylength,xstart:xstart+xlength]
-    #     imsave(tiffpath,frame,append=True,bigtiff=True)
-
-
-# def get_zarr_group(zpath, grpname):
-#     # key to working with zarr files
-#     # group contains mip datasets and dataset attributes
-#     zf = zarr.open(zpath)
-#     return zf[grpname]
-
-
-def get_miplvl_dataset(zpath,grp,miplvl=0):
-    ds = get_zarr_group(zpath,grp)[miplvl]
-    return ds
 
 
 def create_cutout_from_zarr(zarrFile,
@@ -87,6 +121,23 @@ def create_cutout_from_zarr(zarrFile,
                             mdpath="",
                             miplvl=0,
                             **kwargs):
+    """write tiff stack from cutout of zarr dataset 
+
+    Parameters
+    ----------
+    zarrFile : str
+        path string to image data source zarr
+    tileGroup : str
+        name of zarr group containing position source data
+    outputFile : str
+        path string to output .tif file
+    outputFormat : str
+        format string (only tif)
+    mdpath : str
+        path string to output metadata .json
+    miplvl : int
+        dataset mip level to write
+    """
     zpath = pathlib.Path(zarrFile)
     if zpath.exists():
         ds = get_miplvl_dataset(zarrFile,tileGroup,miplvl)
