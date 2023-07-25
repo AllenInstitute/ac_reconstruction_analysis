@@ -15,7 +15,9 @@ from acanalysis.splitup_swc import get_axon_list_from_subtrees
 def ori_lookup(ori):
     oriTuple = {
         "+x": ("x", "POS", 0),
-        "-x": ("x", "NEG", 0)
+        "-x": ("x", "NEG", 0),
+        "+z": ("z", "POS", 2),
+        "-z": ("z", "NEG", 2)
     }[ori]
     return oriTuple
 
@@ -37,8 +39,14 @@ def keypoint_from_neuron(neuron, ori=None):
         i1 = n-10 if n>10 else 0
     loc1 = numpy.array(neuron.nodes.loc[i1,["x","y","z"]].tolist())
     vec = (loc1-loc0)/numpy.linalg.norm(loc1-loc0)
+    if idx == 0:
+        location = loc0
+        vector = vec
+    elif idx == 2:
+        location = loc0[[2,1,0]]
+        vector = vec[[2,1,0]]
     
-    return KeyPoint(name=name,location=loc0,vector=vec)
+    return KeyPoint(name=name,location=location,vector=vector)
 
 
 def filter_skeletons(neurons,names=None,ids=None,mincablelength=None,minradius=None,**kwargs):
@@ -57,11 +65,11 @@ def filter_skeletons(neurons,names=None,ids=None,mincablelength=None,minradius=N
 
 def filter_surface_keypoints(KeyPtList,distance=0,ori=None,surf_map=None,**kwargs):
     axis, sign, idx = ori_lookup(ori)
-    indices = [0,1,2]
-    indices.pop(idx)
+    # indices = [0,1,2]
+    # indices.pop(idx)
     if surf_map is None:
         print("Surface map not provided: defaulting to extremal node")
-        hlist = numpy.array([keypt.location[idx] for keypt in KeyPtList])
+        hlist = numpy.array([keypt.location[0] for keypt in KeyPtList])
     else:
         print("Interpolating surface map")
         interp = RGI((numpy.arange(surf_map.shape[0]),numpy.arange(surf_map.shape[1])),surf_map,method="nearest")
@@ -71,14 +79,14 @@ def filter_surface_keypoints(KeyPtList,distance=0,ori=None,surf_map=None,**kwarg
             good = numpy.nonzero(hlist>=hmax-distance)[0]
         else:
             locs = numpy.array([keypt.location for keypt in KeyPtList])
-            good = numpy.nonzero(locs[:,idx] >= interp(numpy.array([locs[:,indices[0]],locs[:,indices[1]]]).transpose()) - distance)[0]
+            good = numpy.nonzero(locs[:,0] >= interp(numpy.array([locs[:,1],locs[:,2]]).transpose()) - distance)[0]
     elif sign == "NEG":
         if surf_map is None:
             hmin = hlist.min()
             good = numpy.nonzero(hlist<=hmin+distance)[0]
         else:
             locs = numpy.array([keypt.location for keypt in KeyPtList])
-            good = numpy.nonzero(locs[:,idx] <= interp(numpy.array([locs[:,indices[0]],locs[:,indices[1]]]).transpose()) + distance)[0]
+            good = numpy.nonzero(locs[:,0] <= interp(numpy.array([locs[:,1],locs[:,2]]).transpose()) + distance)[0]
     SurfList = [KeyPtList[g] for g in good]
     return SurfList
 
