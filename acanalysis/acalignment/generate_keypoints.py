@@ -38,14 +38,19 @@ def keypoint_from_neuron(neuron, ori=None, swcmip=0):
     else:
         i1 = n-10 if n>10 else 0
     loc1 = numpy.array(neuron.nodes.loc[i1,["x","y","z"]].tolist())
-    vec = (loc1-loc0)/numpy.linalg.norm(loc1-loc0)
+    norm = numpy.linalg.norm(loc1-loc0)
+    if norm > 0:
+        vec = (loc1-loc0)/numpy.linalg.norm()
+    else:
+        vec = None
     if idx == 0:
         location = loc0
-        vector = vec
     elif idx == 2:
         location = loc0[[2,1,0]]
-        vector = vec[[2,1,0]]
+        if not vec is None:
+            vec = vec[[2,1,0]]
     location *= 2**swcmip
+    vector = vec
     
     return KeyPoint(name=name,location=location,vector=vector)
 
@@ -79,9 +84,9 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
             loc = kp.location
             if all([(loc[a]>=roi_coords[a][0])and(loc[a]<roi_coords[a][1]) for a in coord_axes]):
                 kp.location -= c0
-            if kp.location[2] > 4000:
-                print(kp.location)
-            KeyPtList.append(kp)
+                if kp.location[2] > 4000:
+                    print(kp.location)
+                KeyPtList.append(kp)
     else:
         KeyPtList = keypts
     if surf_map is None:
