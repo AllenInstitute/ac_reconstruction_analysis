@@ -68,6 +68,10 @@ def filter_surface_keypoints(KeyPtList,distance=0,ori=None,surf_map=None,roi_coo
     axis, sign, idx = ori_lookup(ori)
     # indices = [0,1,2]
     # indices.pop(idx)
+    if not roi_coords is None:
+        coord_axes = [a for a in range(len(roi_coords)) if roi_coords[a]]
+        locs = numpy.array([k.location for k in KeyPtList])
+        KeyPtList = [kp for i,kp in enumerate(KeyPtList) if all([(locs[i,a]>=roi_coords[a][0])and(locs[i,a]<roi_coords[a][1]) for a in coord_axes])]
     if surf_map is None:
         print("Surface map not provided: defaulting to extremal node")
         hlist = numpy.array([keypt.location[0] for keypt in KeyPtList])
@@ -89,10 +93,6 @@ def filter_surface_keypoints(KeyPtList,distance=0,ori=None,surf_map=None,roi_coo
             locs = numpy.array([keypt.location for keypt in KeyPtList])
             good = numpy.nonzero(locs[:,0] <= interp(numpy.array([locs[:,1],locs[:,2]]).transpose()) + distance)[0]
     SurfList = [KeyPtList[g] for g in good]
-    if not roi_coords is None:
-        coord_axes = [a for a in range(len(roi_coords)) if roi_coords[a]]
-        locs = numpy.array([k.location for k in SurfList])
-        SurfList = [kp for i,kp in enumerate(SurfList) if all([(locs[i,a]>=roi_coords[a][0])and(locs[i,a]<roi_coords[a][1]) for a in coord_axes])]
     return SurfList
 
     
