@@ -70,6 +70,7 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
     c0 = numpy.zeros(len(roi_coords))
     for a in coord_axes:
         c0[a] = roi_coords[a][0]
+    print(c0)
     # indices = [0,1,2]
     # indices.pop(idx)
     if not roi_coords is None:
@@ -78,6 +79,8 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
             loc = kp.location
             if all([(loc[a]>=roi_coords[a][0])and(loc[a]<roi_coords[a][1]) for a in coord_axes]):
                 kp.location -= c0
+            if kp.location[2] > 4000:
+                print(kp.location)
             KeyPtList.append(kp)
     else:
         KeyPtList = keypts
