@@ -64,14 +64,23 @@ def filter_skeletons(neurons,names=None,ids=None,mincablelength=None,minradius=N
     return neurons
 
 
-def filter_surface_keypoints(KeyPtList,distance=0,ori=None,surf_map=None,roi_coords=None,**kwargs):
+def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords=None,**kwargs):
     axis, sign, idx = ori_lookup(ori)
+    coord_axes = [a for a in range(len(roi_coords)) if roi_coords[a]]
+    c0 = numpy.zeros(len(roi_coords))
+    for a in coord_axes:
+        c0[a] = roi_coords[a][0]
     # indices = [0,1,2]
     # indices.pop(idx)
     if not roi_coords is None:
-        coord_axes = [a for a in range(len(roi_coords)) if roi_coords[a]]
-        locs = numpy.array([k.location for k in KeyPtList])
-        KeyPtList = [kp for i,kp in enumerate(KeyPtList) if all([(locs[i,a]>=roi_coords[a][0])and(locs[i,a]<roi_coords[a][1]) for a in coord_axes])]
+        KeyPtList = []
+        for kp in keypts:
+            loc = kp.location
+            if all([(loc[a]>=roi_coords[a][0])and(loc[a]<roi_coords[a][1]) for a in coord_axes]):
+                kp.location -= c0
+            KeyPtList.append(kp)
+    else:
+        KeyPtList = keypts
     if surf_map is None:
         print("Surface map not provided: defaulting to extremal node")
         hlist = numpy.array([keypt.location[0] for keypt in KeyPtList])
