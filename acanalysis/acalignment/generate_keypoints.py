@@ -63,7 +63,7 @@ def filter_skeletons(neurons,names=None,ids=None,mincablelength=None,minradius=N
     return neurons
 
 
-def filter_surface_keypoints(KeyPtList,distance=0,ori=None,surf_map=None,**kwargs):
+def filter_surface_keypoints(KeyPtList,distance=0,ori=None,surf_map=None,roi_coords=None,**kwargs):
     axis, sign, idx = ori_lookup(ori)
     # indices = [0,1,2]
     # indices.pop(idx)
@@ -88,10 +88,14 @@ def filter_surface_keypoints(KeyPtList,distance=0,ori=None,surf_map=None,**kwarg
             locs = numpy.array([keypt.location for keypt in KeyPtList])
             good = numpy.nonzero(locs[:,0] <= interp(numpy.array([locs[:,1],locs[:,2]]).transpose()) + distance)[0]
     SurfList = [KeyPtList[g] for g in good]
+    if not roi_coords is None:
+        coord_axes = [a for a in range(len(roi_coords)) if roi_coords[a]]
+        locs = numpy.array([k.location for k in SurfList])
+        SurfList = [kp for i,kp in enumerate(SurfList) if all([(locs[i,a]>=roi_coords[a][0])and(locs[i,a]<roi_coords[a][1]) for a in coord_axes])]
     return SurfList
 
     
-def generate_keypoint_file(swcpath,outputpath,ori=None,surf_file='',tile_name='',**kwargs):
+def generate_keypoint_file(swcpath,outputpath,ori=None,tile_name='',surf_file='',roi_coords=None,**kwargs):
     if surf_file:
         surf = numpy.load(surf_file)
     else:
@@ -101,6 +105,6 @@ def generate_keypoint_file(swcpath,outputpath,ori=None,surf_file='',tile_name=''
     skels = get_axon_list_from_subtrees(navis.read_swc(swcpath))
     neurons = filter_skeletons(skels,ori=ori,**kwargs)
     keypts = [keypoint_from_neuron(neuron,ori) for neuron in neurons]
-    surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,**kwargs)
+    surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,roi_coords=roi_coords,**kwargs)
     write_keypoints_to_file(surfkeypts,outputpath,tile_name)
 

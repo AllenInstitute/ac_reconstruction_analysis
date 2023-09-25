@@ -14,5 +14,6 @@ acanalysis/acalignment/__init__.py
 acanalysis/acalignment/generate_keypoints.py
 acanalysis/acalignment/keypoints.py
 acanalysis/acalignment/match_keypoints.py
-acanalysis/acalignment/mpyicbg_ransac.py
 acanalysis/acalignment/schema.py
+acanalysis/acalignment/transforms.py
+acanalysis/acalignment/utils.py
