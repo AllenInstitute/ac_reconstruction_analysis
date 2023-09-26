@@ -71,14 +71,14 @@ def filter_skeletons(neurons,names=None,ids=None,mincablelength=None,minradius=N
 
 def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords=None,**kwargs):
     axis, sign, idx = ori_lookup(ori)
-    coord_axes = [a for a in range(len(roi_coords)) if roi_coords[a]]
-    c0 = numpy.zeros(len(roi_coords))
-    for a in coord_axes:
-        c0[a] = roi_coords[a][0]
-    print(c0)
     # indices = [0,1,2]
     # indices.pop(idx)
     if not roi_coords is None:
+        coord_axes = [a for a in range(len(roi_coords)) if roi_coords[a]]
+        c0 = numpy.zeros(len(roi_coords))
+        for a in coord_axes:
+            c0[a] = roi_coords[a][0]
+        print(c0)
         KeyPtList = []
         for kp in keypts:
             if not kp.vector is None:
