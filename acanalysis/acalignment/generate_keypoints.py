@@ -33,10 +33,11 @@ def keypoint_from_neuron(neuron, ori=None, swcmip=0):
     i_end = loc_func(endpts[:,idx])
     loc0 = endpts[i_end]
     n = neuron.nodes.shape[0]
+    nend = int(10/(2**swcmip))
     if i_end == 1:
-        i1 = n-1 if n<=10 else 10
+        i1 = n-1 if n<=nend else nend
     else:
-        i1 = n-10 if n>10 else 0
+        i1 = n-nend if n>nend else 0
     loc1 = numpy.array(neuron.nodes.loc[i1,["x","y","z"]].tolist())
     norm = numpy.linalg.norm(loc1-loc0)
     if norm > 0:
@@ -122,7 +123,7 @@ def generate_keypoint_file(swcpath,outputpath,swcmip=0,ori=None,tile_name='',sur
     #swc_it = iterate_swc_chunks(swcpath)
     #skels = navis.read_swc(swc_it)
     skels = get_axon_list_from_subtrees(navis.read_swc(swcpath))
-    neurons = filter_skeletons(skels,ori=ori,**kwargs)
+    neurons = filter_skeletons(skels,**kwargs)
     keypts = [keypoint_from_neuron(neuron,ori,swcmip) for neuron in neurons]
     surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,roi_coords=roi_coords,**kwargs)
     write_keypoints_to_file(surfkeypts,outputpath,tile_name)
