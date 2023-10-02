@@ -74,6 +74,12 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
     axis, sign, idx = ori_lookup(ori)
     # indices = [0,1,2]
     # indices.pop(idx)
+    if surf_map is None:
+        print("Surface map not provided: defaulting to extremal node")
+        hlist = numpy.array([keypt.location[0] for keypt in keypts])
+    else:
+        print("Interpolating surface map")
+        interp = RGI((numpy.arange(surf_map.shape[0]),numpy.arange(surf_map.shape[1])),surf_map,method="nearest")
     if not roi_coords is None:
         coord_axes = [a for a in range(len(roi_coords)) if roi_coords[a]]
         c0 = numpy.zeros(len(roi_coords))
@@ -90,13 +96,10 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
                         print(kp.location)
                     KeyPtList.append(kp)
     else:
-        KeyPtList = [kp for kp in keypts if not kp.vector is None]
-    if surf_map is None:
-        print("Surface map not provided: defaulting to extremal node")
-        hlist = numpy.array([keypt.location[0] for keypt in KeyPtList])
-    else:
-        print("Interpolating surface map")
-        interp = RGI((numpy.arange(surf_map.shape[0]),numpy.arange(surf_map.shape[1])),surf_map,method="nearest")
+        if surf_map is None:
+            KeyPtList = [kp for kp in keypts if not kp.vector is None]
+        else:
+            KeyPtList = [kp for kp in keypts if (not kp.vector is None) and (kp.location[2] < surf_map.shape[1])]
     if sign == "POS":
         if surf_map is None:
             hmax = hlist.max()
