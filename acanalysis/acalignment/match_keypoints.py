@@ -59,6 +59,7 @@ def match_keypoint_sets(kpset0,kpset1,axes=[1,2],tforms0=None,tforms1=None,knn=N
 
 def combine_tile_keypoints(kpfileList,offsetList,shuffle=False):
     if shuffle:
+        print("shuffling offsets")
         i_sh = numpy.random.permutation(len(offsetList))
     kpList = []
     for i,kpfile in enumerate(kpfileList):
