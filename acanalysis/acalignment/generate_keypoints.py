@@ -90,7 +90,7 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
                         print(kp.location)
                     KeyPtList.append(kp)
     else:
-        KeyPtList = [kp for kp in keypts if (not kp.vector is None) and (kp.location[2]<4000)]
+        KeyPtList = [kp for kp in keypts if not kp.vector is None]
     if surf_map is None:
         print("Surface map not provided: defaulting to extremal node")
         hlist = numpy.array([keypt.location[0] for keypt in KeyPtList])
