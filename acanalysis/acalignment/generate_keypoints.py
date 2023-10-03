@@ -81,13 +81,13 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
     else:
         print("Interpolating surface map")
         interp = RGI((numpy.arange(surf_map.shape[0]),numpy.arange(surf_map.shape[1])),surf_map,method="nearest")
+    KeyPtList = []
     if not roi_coords is None:
         coord_axes = [a for a in range(len(roi_coords)) if roi_coords[a]]
         c0 = numpy.zeros(len(roi_coords))
         for a in coord_axes:
             c0[a] = roi_coords[a][0]
         print(c0)
-        KeyPtList = []
         for kp in keypts:
             if not kp.vector is None:
                 loc = kp.location
@@ -99,7 +99,6 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
                         print(kp.location)
         print(len(KeyPtList))
     else:
-        KeyPtList = []
         if surf_map is None:
             KeyPtList = [kp for kp in keypts if not kp.vector is None]
         else:
@@ -123,7 +122,7 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
     return SurfList
 
     
-def generate_keypoint_file(swcpath,outputpath,is_tar=False,swcmip=0,ori=None,tile_name='',surf_file='',roi_coords=None,**kwargs):
+def generate_keypoint_file(swcpath,outputpath,is_tar=False,swcmip=0,ori=None,swap_xyz=[],tile_name='',surf_file='',roi_coords=None,**kwargs):
     if surf_file:
         surf = numpy.load(surf_file)
     else:
@@ -134,6 +133,9 @@ def generate_keypoint_file(swcpath,outputpath,is_tar=False,swcmip=0,ori=None,til
         skels = read_navis_neurons_tar(swcpath)
     else:
         skels = get_axon_list_from_subtrees(navis.read_swc(swcpath))
+    if swap_xyz:
+        for sk in skels:
+            sk.nodes[["x","y","z"]] = sk.nodes[swap_xyz]
     neurons = filter_skeletons(skels,**kwargs)
     keypts = [keypoint_from_neuron(neuron,ori,swcmip) for neuron in neurons]
     surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,roi_coords=roi_coords,**kwargs)
