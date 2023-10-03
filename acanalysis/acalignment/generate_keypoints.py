@@ -81,6 +81,7 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
     else:
         print("Interpolating surface map")
         interp = RGI((numpy.arange(surf_map.shape[0]),numpy.arange(surf_map.shape[1])),surf_map,method="nearest")
+    print(len(keypts))
     KeyPtList = []
     if not roi_coords is None:
         coord_axes = [a for a in range(len(roi_coords)) if roi_coords[a]]
@@ -93,7 +94,7 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
                 loc = kp.location
                 if all([(loc[a]>=roi_coords[a][0])and(loc[a]<roi_coords[a][1]) for a in coord_axes]):
                     kp.location -= c0
-                    if kp.location[2] < surf_map.shape[1]:
+                    if (kp.location[2]>=0) and (kp.location[2] < surf_map.shape[1]):
                         KeyPtList.append(kp)
                     else:
                         print(kp.location)
