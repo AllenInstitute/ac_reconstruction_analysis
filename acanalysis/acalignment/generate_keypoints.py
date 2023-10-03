@@ -138,7 +138,9 @@ def generate_keypoint_file(swcpath,outputpath,is_tar=False,swcmip=0,ori=None,swa
         for sk in skels:
             sk.nodes[["x","y","z"]] = sk.nodes[swap_xyz]
         print("[x,y,z] axes permuted as " + str(swap_xyz))
+    print(str(skels.shape[0]) + " initial")
     neurons = filter_skeletons(skels,**kwargs)
+    print(str(neurons.shape[0]) + " filtered")
     keypts = [keypoint_from_neuron(neuron,ori,swcmip) for neuron in neurons]
     surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,roi_coords=roi_coords,**kwargs)
     write_keypoints_to_file(surfkeypts,outputpath,tile_name)
