@@ -97,12 +97,14 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
                         KeyPtList.append(kp)
                     else:
                         print(kp.location)
-        keypts = KeyPtList
-    KeyPtList = []
-    if surf_map is None:
-        KeyPtList = [kp for kp in keypts if not kp.vector is None]
+        print(len(KeyPtList))
     else:
-        KeyPtList = [kp for kp in keypts if (not kp.vector is None) and (kp.location[2] < surf_map.shape[1])]
+        KeyPtList = []
+        if surf_map is None:
+            KeyPtList = [kp for kp in keypts if not kp.vector is None]
+        else:
+            KeyPtList = [kp for kp in keypts if (not kp.vector is None) and (kp.location[2] < surf_map.shape[1])]
+        print(len(KeyPtList))
     if sign == "POS":
         if surf_map is None:
             hmax = hlist.max()
