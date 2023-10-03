@@ -57,3 +57,4 @@ def get_axons_from_tar(tar_fn,concurrency=10,preprocess_func=None):
     axons = read_navis_neurons_tar(tar_fn,concurrency=concurrency,preprocess_func=preprocess_func)
     for i,axon in enumerate(axons):
         axon.id = str(i)
+    return axons
