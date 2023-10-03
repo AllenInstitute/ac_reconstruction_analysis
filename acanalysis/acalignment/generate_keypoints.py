@@ -11,7 +11,7 @@ from scipy.interpolate import RegularGridInterpolator as RGI
 
 from acanalysis.acalignment.keypoints import KeyPoint,write_keypoints_to_file
 from acanalysis.splitup_swc import get_axon_list_from_subtrees
-from acanalysis.acalignment.utils import read_navis_neurons_tar
+from acanalysis.acalignment.utils import get_axons_from_tar
 
 def ori_lookup(ori):
     oriTuple = {
@@ -131,7 +131,7 @@ def generate_keypoint_file(swcpath,outputpath,is_tar=False,swcmip=0,ori=None,swa
     #swc_it = iterate_swc_chunks(swcpath)
     #skels = navis.read_swc(swc_it)
     if is_tar:
-        skels = read_navis_neurons_tar(swcpath)
+        skels = get_axons_from_tar(swcpath)
     else:
         skels = get_axon_list_from_subtrees(navis.read_swc(swcpath))
     if swap_xyz:
