@@ -11,6 +11,7 @@ from scipy.interpolate import RegularGridInterpolator as RGI
 
 from acanalysis.acalignment.keypoints import KeyPoint,write_keypoints_to_file
 from acanalysis.splitup_swc import get_axon_list_from_subtrees
+from acanalysis.acalignment.utils import read_navis_neurons_tar
 
 def ori_lookup(ori):
     oriTuple = {
@@ -118,14 +119,17 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
     return SurfList
 
     
-def generate_keypoint_file(swcpath,outputpath,swcmip=0,ori=None,tile_name='',surf_file='',roi_coords=None,**kwargs):
+def generate_keypoint_file(swcpath,outputpath,is_tar=False,swcmip=0,ori=None,tile_name='',surf_file='',roi_coords=None,**kwargs):
     if surf_file:
         surf = numpy.load(surf_file)
     else:
         surf = None
     #swc_it = iterate_swc_chunks(swcpath)
     #skels = navis.read_swc(swc_it)
-    skels = get_axon_list_from_subtrees(navis.read_swc(swcpath))
+    if is_tar:
+        skels = read_navis_neurons_tar(swcpath)
+    else:
+        skels = get_axon_list_from_subtrees(navis.read_swc(swcpath))
     neurons = filter_skeletons(skels,**kwargs)
     keypts = [keypoint_from_neuron(neuron,ori,swcmip) for neuron in neurons]
     surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,roi_coords=roi_coords,**kwargs)
