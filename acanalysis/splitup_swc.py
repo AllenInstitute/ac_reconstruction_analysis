@@ -76,7 +76,7 @@ def get_axon_list_from_subtrees(treeNeuron,minlength=1):
             aid = str(tree[0])
             subtree = treeNodesById.loc[tree]
             axon = navis.TreeNeuron(subtree.reset_index())
-            axon.id = aid
+            axon.name = aid
             axonList.append(axon)
     return axonList
 
