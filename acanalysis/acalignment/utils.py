@@ -55,6 +55,6 @@ def read_navis_neurons_tar(tar_fn, concurrency=10, preprocess_func=None):
 
 def get_axons_from_tar(tar_fn,concurrency=10,preprocess_func=None):
     axons = read_navis_neurons_tar(tar_fn,concurrency=concurrency,preprocess_func=preprocess_func)
-    for axon in enumerate(axons):
+    for axon in axons:
         axon.name = axon.swcname.split(".")[-2]
     return axons
