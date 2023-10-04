@@ -46,7 +46,7 @@ def read_navis_neurons_tar(tar_fn, concurrency=10, preprocess_func=None):
         with tarfile.open(tar_fn, "r:gz") as t:
             for m in t.getmembers():
                 swc_b = t.extractfile(m).read()
-                futs.append(e.submit(navis.io.read_swc, {"f":swc_b.decode(),"name":m.name}))
+                futs.append(e.submit(navis.io.read_swc,f=swc_b.decode(),swcname=m.name))
         navis_neurons = navis.NeuronList([
             preprocess_func(fut.result()) for
             fut in concurrent.futures.as_completed(futs)])
@@ -55,7 +55,6 @@ def read_navis_neurons_tar(tar_fn, concurrency=10, preprocess_func=None):
 
 def get_axons_from_tar(tar_fn,concurrency=10,preprocess_func=None):
     axons = read_navis_neurons_tar(tar_fn,concurrency=concurrency,preprocess_func=preprocess_func)
-    for i,axon in enumerate(axons):
-        #axon.name = str(i)
-        axon.id = str(axon.id)
+    for axon in enumerate(axons):
+        axon.name = axon.swcname.split(".")[-2]
     return axons
