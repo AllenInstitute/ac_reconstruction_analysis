@@ -31,10 +31,7 @@ class KeypointEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def write_keypoints_to_file(KeyPoints,jsonpath,tilename=''):
-    if tilename:
-        for k in KeyPoints:
-            k.name = tilename + k.name
+def write_keypoints_to_file(KeyPoints,jsonpath):
     with open(jsonpath,"w+") as f:
         json.dump(KeyPoints,f,cls=KeypointEncoder,indent=4)
         

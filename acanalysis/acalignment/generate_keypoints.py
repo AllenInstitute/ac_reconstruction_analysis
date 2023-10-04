@@ -23,8 +23,9 @@ def ori_lookup(ori):
     return oriTuple
 
 
-def keypoint_from_neuron(neuron, ori=None, swcmip=0):
-    name = str(neuron.id)
+def keypoint_from_neuron(neuron,name='',ori=None,swcmip=0):
+    if not name:
+        name = str(neuron.name)
     axis, sign, idx = ori_lookup(ori)
     endpts = numpy.vstack([neuron.leafs[["x", "y", "z"]], neuron.nodes[neuron.nodes.node_id == neuron.root.flatten()[0]][["x", "y", "z"]]])
     loc_func = {
@@ -81,7 +82,6 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
     else:
         print("Interpolating surface map")
         interp = RGI((numpy.arange(surf_map.shape[0]),numpy.arange(surf_map.shape[1])),surf_map,method="nearest")
-    print(len(keypts))
     KeyPtList = []
     if not roi_coords is None:
         coord_axes = [a for a in range(len(roi_coords)) if roi_coords[a]]
@@ -98,13 +98,12 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
                         KeyPtList.append(kp)
                     else:
                         print(kp.location)
-        print(len(KeyPtList))
     else:
         if surf_map is None:
             KeyPtList = [kp for kp in keypts if not kp.vector is None]
         else:
             KeyPtList = [kp for kp in keypts if (not kp.vector is None) and (kp.location[2] < surf_map.shape[1])]
-        print(len(KeyPtList))
+    print(len(KeyPtList))
     if sign == "POS":
         if surf_map is None:
             hmax = hlist.max()
@@ -141,7 +140,7 @@ def generate_keypoint_file(swcpath,outputpath,is_tar=False,swcmip=0,ori=None,swa
     print(str(skels.shape[0]) + " initial")
     neurons = filter_skeletons(skels,**kwargs)
     print(str(neurons.shape[0]) + " filtered")
-    keypts = [keypoint_from_neuron(neuron,ori,swcmip) for neuron in neurons]
+    keypts = [keypoint_from_neuron(neuron,name=tile_name+str(neuron.name),ori=ori,swcmip=swcmip) for neuron in neurons]
     surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,roi_coords=roi_coords,**kwargs)
-    write_keypoints_to_file(surfkeypts,outputpath,tile_name)
+    write_keypoints_to_file(surfkeypts,outputpath)
 
