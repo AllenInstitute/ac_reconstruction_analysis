@@ -137,6 +137,7 @@ def generate_keypoint_file(swcpath,outputpath,is_tar=False,swcmip=0,ori=None,swa
         skels = get_axons_from_tar(swcpath)
     else:
         skels = get_axon_list_from_subtrees(navis.read_swc(swcpath))
+        skels = navis.NeuronList(skels)
     if swap_xyz:
         for sk in skels:
             sk.nodes[["x","y","z"]] = sk.nodes[swap_xyz]
