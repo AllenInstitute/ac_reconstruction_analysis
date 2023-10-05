@@ -59,18 +59,22 @@ def keypoint_from_neuron(neuron,name='',ori=None,swcmip=0):
 
 
 def filter_skeletons(neurons,names=None,ids=None,mincablelength=None,minradius=None,**kwargs):
-    if not names is None:
-        neurons = [n for n in neurons if n.name in names]
-    if not ids is None:
-        neurons = [n for n in neurons if n.id in ids]
-    if not mincablelength is None:
-        neurons = [n for n in neurons if n.cable_length >= mincablelength]
-    if not minradius is None:
-        neurons = [n for n in neurons if n.nodes.radius.mean() >= minradius]
-    if neurons:
-        neurons = navis.NeuronList(neurons)
-    return neurons
-
+    filtered = []
+    for n in neurons:
+        good = True
+        if not names is None:
+            good = n.name in names
+        if not ids is None:
+            good = n.id in ids
+        if not mincablelength is None:
+            good = n.cable_length >= mincablelength
+        if not minradius is None:
+            good = n.nodes.radius.mean() >= minradius
+        if good:
+            filtered.append(n)
+    if filtered:
+        return navis.NeuronList(filtered)
+    return None
 
 def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords=None,**kwargs):
     axis, sign, idx = ori_lookup(ori)
