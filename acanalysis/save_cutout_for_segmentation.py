@@ -4,7 +4,7 @@
 import pathlib
 import argschema
 import json
-from utils import get_zarr_params, get_miplvl_dataset, write_tiff_vol_append
+from acanalysis.utils import get_zarr_params, get_miplvl_dataset, write_tiff_vol_append
 
 
 example_input = {
