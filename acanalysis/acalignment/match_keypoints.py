@@ -30,7 +30,45 @@ def get_features_from_keypoints(kplist,axes=None,transforms=None):
     return locs,vecs
 
 
-def match_keypoint_sets(kpset0,kpset1,axes=[1,2],tforms0=None,tforms1=None,knn=None,rball=None,kdtreeleafsize=50,mincosine=0.8):
+def match_keypoint_sets(kpset0,
+                        kpset1,
+                        axes=[1,2],
+                        tforms0=None,
+                        tforms1=None,
+                        knn=None,
+                        rball=None,
+                        kdtreeleafsize=50,
+                        mincosine=0.8):
+    """generate matches between two sets of keypoints
+    
+    Parameters
+    ----------
+    kpset0 : list of keypoint.KeyPoint
+        keypoints from first section
+    kpset1 : list of keypoint.KeyPoint
+        keypoints from second section
+    tforms0 : list of numpy.ndarray
+        list of transforms to apply to kpset0 before pairing
+    tforms1 : list of numpy.ndarray
+        list of transforms to apply to kpset1 before pairing
+    knn : int
+        k-nearest neighbors search
+    rball : float
+        ball search radius
+    kdtreeleafsize : int
+        leaf size parameter for setting up kdtree
+    mincosine : float
+        minimum cosine of alignment between pairs
+
+    Returns
+    ------
+    matchset0 : list of keypoint.KeyPoint
+        keypoints matched from kpset0 ordered by pairing
+    matchset1 : list of keypoint.KeyPoint
+        keypoints matched from kpset1 ordered by pairing
+    distancelist : list of float
+        euclidean distance between keypoint pairs
+    """
     if knn is None and rball is None:
         knn = 10
     pyz,pvecs = get_features_from_keypoints(kpset0,axes=axes,transforms=tforms0)
@@ -58,6 +96,22 @@ def match_keypoint_sets(kpset0,kpset1,axes=[1,2],tforms0=None,tforms1=None,knn=N
 
 
 def combine_tile_keypoints(kpfileList,offsetList,shuffle=False):
+    """combine keypoints across tiles with spatial offsets into section coords
+    
+    Parameters
+    ----------
+    kpfileList : list of str or Path str
+        filepaths to tile keypoint files
+    offsetList : list of list or numpy.ndarray
+        spatial offsets to be added to each keypoint location from the corresponding tile
+    shuffle : bool
+        flag indicating whether to randomly shuffle tile order/offsets
+
+    Returns
+    ------
+    kpList : list of keypoint.KeyPoint
+        list of combined keypoints
+    """
     if shuffle:
         print("shuffling offsets")
         i_sh = numpy.random.permutation(len(offsetList))
@@ -71,9 +125,10 @@ def combine_tile_keypoints(kpfileList,offsetList,shuffle=False):
     return kpList
 
 
-def run_match(kpfiles0,kpfiles1,tforms0,tforms1,offsets0,offsets1,output0,output1,affines0,affines1):
-    kpset0 = combine_tile_keypoints(kpfiles0,offsets0)
-    kpset1 = combine_tile_keypoints(kpfiles1,offsets1)
-    matches0,matches1,distances = match_keypoint_sets(kpset0,kpset1,tforms0=tforms0,tforms1=tforms1)
-    write_keypoints_to_file(matches0,output0)
-    write_keypoints_to_file(matches1,output1)
+# run function not used in notebooks
+# def run_match(kpfiles0,kpfiles1,tforms0,tforms1,offsets0,offsets1,output0,output1,affines0,affines1):
+#     kpset0 = combine_tile_keypoints(kpfiles0,offsets0)
+#     kpset1 = combine_tile_keypoints(kpfiles1,offsets1)
+#     matches0,matches1,distances = match_keypoint_sets(kpset0,kpset1,tforms0=tforms0,tforms1=tforms1)
+#     write_keypoints_to_file(matches0,output0)
+#     write_keypoints_to_file(matches1,output1)

@@ -11,6 +11,17 @@ import json
 
 @dataclasses.dataclass
 class KeyPoint:
+    """KeyPoint dataclass
+    
+    Attributes
+    ----------
+    name : str
+        keypoint name associated with generating skeleton
+    location : numpy.ndarray
+        3D location (zyx) where z is vertical axis
+    vector : numpy.ndarray
+        3D unit vector (zyx) where [1,0,0] is flat surface normal
+    """
     name: str
     location: numpy.ndarray
     vector: numpy.ndarray

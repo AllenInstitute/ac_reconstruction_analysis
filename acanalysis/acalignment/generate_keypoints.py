@@ -24,6 +24,24 @@ def ori_lookup(ori):
 
 
 def keypoint_from_neuron(neuron,name='',ori=None,swcmip=0):
+    """generate keypoint from neuron skeleton (axon)
+    
+    Parameters
+    ----------
+    neuron : navis.TreeNeuron
+        skeleton representing single axon
+    name : str
+        keypoint name associated with generating skeleton
+    ori : str
+        character string defining section surface axis and direction
+    swcmip : int
+        mip level of skeletons relative to image data
+
+    Returns
+    ------
+    KeyPoint : keypoints.KeyPoint
+        dataclass storing name, 3D surface location, and 3D impact vector
+    """
     if not name:
         name = str(neuron.name)
     axis, sign, idx = ori_lookup(ori)
@@ -46,7 +64,7 @@ def keypoint_from_neuron(neuron,name='',ori=None,swcmip=0):
         vec = (loc1-loc0)/norm
     else:
         vec = None
-    if idx == 0:
+    if idx == 0: 
         location = loc0
     elif idx == 2:
         location = loc0[[2,1,0]]
@@ -75,6 +93,7 @@ def filter_skeletons(neurons,names=None,ids=None,mincablelength=None,minradius=N
     if filtered:
         return navis.NeuronList(filtered)
     return None
+
 
 def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords=None,**kwargs):
     axis, sign, idx = ori_lookup(ori)
@@ -126,7 +145,41 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
     return SurfList
 
     
-def generate_keypoint_file(swcpath,outputpath,is_tar=False,swcmip=0,ori=None,swap_xyz=[],tile_name='',surf_file='',roi_coords=None,**kwargs):
+def generate_keypoint_file(swcpath,
+                           outputpath,
+                           is_tar=False,
+                           swcmip=0,
+                           ori=None,
+                           swap_xyz=[],
+                           tile_name='',
+                           surf_file='',
+                           **kwargs):
+    """write json file containing list of keypoints generated from all skeletons
+    
+    Parameters
+    ----------
+    swcpath : Path or Path str
+        path to .swc or .gz.tar file containing skeletons
+    outputpath : Path or Path str
+        path for output json
+    is_tar : bool
+        flag for loading .gz.tar archive
+    swcmip : int
+        mip level of skeletons relative to image data
+    ori : str
+        character string defining section surface axis and direction
+    swap_xyz : list of str
+        permutation of axes to swap (is this needed?)
+    tile_name : str
+        optional tile id to add as prefix to keypoint names
+    surf_file : Path or Path str
+        path to .npy file containing surface map
+
+    Returns
+    ------
+    KeyPoint : keypoints.KeyPoint
+        dataclass storing name, 3D surface location, and 3D impact vector
+    """
     if surf_file:
         surf = numpy.load(surf_file)
     else:
@@ -146,6 +199,6 @@ def generate_keypoint_file(swcpath,outputpath,is_tar=False,swcmip=0,ori=None,swa
     neurons = filter_skeletons(skels,**kwargs)
     print(str(neurons.shape[0]) + " filtered")
     keypts = [keypoint_from_neuron(neuron,name=tile_name+str(neuron.name),ori=ori,swcmip=swcmip) for neuron in neurons]
-    surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,roi_coords=roi_coords,**kwargs)
+    surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,**kwargs)
     write_keypoints_to_file(surfkeypts,outputpath)
 
