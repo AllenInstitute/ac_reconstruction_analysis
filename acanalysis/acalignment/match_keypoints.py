@@ -6,7 +6,8 @@ Created on Tue Jun 13 21:17:11 2023
 """
 
 import numpy
-from acanalysis.acalignment.keypoints import write_keypoints_to_file,read_keypoints
+from acanalysis.acalignment.keypoints import read_keypoints
+from acanalysis.acalignment.transforms import get_matrix,ransac
 from scipy.spatial import cKDTree
 from skimage.transform import matrix_transform
 
@@ -19,10 +20,7 @@ def get_features_from_keypoints(kplist,axes=None,transforms=None):
     if not axes is None:
         locs = locs[:,axes]
     if not transforms is None:
-        rigidM = transforms[0]
-        if len(transforms) > 1:
-            for M in transforms[1:]:
-                rigidM = M @ rigidM
+        rigidM = get_matrix(transforms)
         rotM = numpy.eye(3)
         rotM[:2,:2] = rigidM[:2,:2]
         locs = matrix_transform(locs,matrix=rigidM)

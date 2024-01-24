@@ -201,4 +201,5 @@ def generate_keypoint_file(swcpath,
     keypts = [keypoint_from_neuron(neuron,name=tile_name+str(neuron.name),ori=ori,swcmip=swcmip) for neuron in neurons]
     surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,**kwargs)
     write_keypoints_to_file(surfkeypts,outputpath)
+    print("saved keypoints to " + str(outputpath))
 

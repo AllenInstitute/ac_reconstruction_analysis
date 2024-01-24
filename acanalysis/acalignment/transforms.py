@@ -116,3 +116,11 @@ def tps_transform(srcpts,dstpts,computeAffine=True):
     tps = thin_plate_spline.ThinPlateSplineTransform()
     tps.estimate(srcpts,dstpts,computeAffine=computeAffine)
     return tps
+
+
+def get_matrix(transforms):
+    M_all = transforms[0]
+    if len(transforms) > 1:
+        for M in transforms[1:]:
+            M_all = M @ M_all
+    return M_all
