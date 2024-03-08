@@ -58,3 +58,12 @@ def get_axons_from_tar(tar_fn,concurrency=10,preprocess_func=None):
     for axon in axons:
         axon.name = axon.swcname.split(".")[-2]
     return axons
+
+
+def patch_axon_ids(axons):
+    def tostr(x):
+        return str(int(x))
+    for axon in axons:
+        a = axon.nodes.loc[0]
+        aid = tostr(a.z) + tostr(a.y) + tostr(a.x)
+        axon.id = aid
