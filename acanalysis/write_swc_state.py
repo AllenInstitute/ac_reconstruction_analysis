@@ -5,7 +5,7 @@
 import pathlib
 import argschema
 import json
-from utils import get_zarr_params
+from .utils import get_zarr_params
 
 
 example_input = {
