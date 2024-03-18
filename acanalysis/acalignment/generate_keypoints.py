@@ -142,6 +142,7 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
             locs = numpy.array([keypt.location for keypt in KeyPtList])
             good = numpy.nonzero(locs[:,0] <= interp(numpy.array([locs[:,1],locs[:,2]]).transpose()) + distance)[0]
     SurfList = [KeyPtList[g] for g in good]
+    print(str(len(SurfList)) + " surface points")
     return SurfList
 
     
