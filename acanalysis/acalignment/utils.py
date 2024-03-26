@@ -11,6 +11,7 @@ import gzip
 import concurrent
 from io import BytesIO
 import tarfile
+from acanalysis.splitup_swc import get_axon_list_from_subtrees
 
 def shift_navis_xform(skels,shift_xyz):
     M = numpy.diag([1,1,1,1])
@@ -61,9 +62,21 @@ def get_axons_from_tar(tar_fn,concurrency=10,preprocess_func=None):
 
 
 def patch_axon_ids(axons):
-    def tostr(x):
-        return str(int(x))
+    id_func = current_id_func
     for axon in axons:
-        a = axon.nodes.loc[0]
-        aid = tostr(a.z) + tostr(a.y) + tostr(a.x)
-        axon.id = aid
+        axon.id = id_func(axon)
+        
+
+def current_id_func(axon):
+    a = axon.nodes.loc[0]
+    aid = str(int(a.z)) + str(int(a.y)) + str(int(a.x))
+    return aid
+
+
+def read_neurons_from_file(filepath,is_tar=False):
+    if is_tar:
+        skels = get_axons_from_tar(filepath)
+    else:
+        skels = get_axon_list_from_subtrees(navis.read_swc(filepath))
+        skels = navis.NeuronList(skels)
+    return skels
