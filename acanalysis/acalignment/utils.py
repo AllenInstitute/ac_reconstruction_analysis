@@ -50,7 +50,7 @@ def read_navis_neurons_tar(tar_fn, concurrency=10, preprocess_func=None):
                 futs.append(e.submit(navis.io.read_swc,f=swc_b.decode(),swcname=m.name))
         navis_neurons = navis.NeuronList([
             preprocess_func(fut.result()) for
-            fut in concurrent.futures.as_completed(futs)])
+            fut in concurrent.futures.as_completed(futs) if not fut.result() is None])
     return navis_neurons
 
 
@@ -73,9 +73,13 @@ def current_id_func(axon):
     return aid
 
 
-def read_neurons_from_file(filepath,is_tar=False):
+def read_neurons_from_file(filepath,is_tar=False,id_list=None):
     if is_tar:
-        skels = get_axons_from_tar(filepath)
+        if id_list is None:
+            preprocess_func = None
+        else:
+            preprocess_func = lambda x: x if current_id_func(x) in id_list else None
+        skels = get_axons_from_tar(filepath,preprocess_func=preprocess_func)
     else:
         skels = get_axon_list_from_subtrees(navis.read_swc(filepath))
         skels = navis.NeuronList(skels)
