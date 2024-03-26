@@ -10,7 +10,7 @@ import numpy
 from scipy.interpolate import RegularGridInterpolator as RGI
 
 from acanalysis.acalignment.keypoints import KeyPoint,write_keypoints_to_file
-from acanalysis.acalignment.utils import read_neurons_from_file, patch_axon_ids
+from acanalysis.acalignment.utils import read_neurons_from_file
 
 def ori_lookup(ori):
     oriTuple = {
@@ -184,15 +184,10 @@ def generate_keypoint_file(swcpath,
         surf = numpy.load(surf_file)
     else:
         surf = None
-    skels = read_neurons_from_file(swcpath,is_tar=is_tar)
-    if swap_xyz:
-        for sk in skels:
-            sk.nodes[["x","y","z"]] = sk.nodes[swap_xyz]
-        print("[x,y,z] axes permuted as " + str(swap_xyz))
+    skels = read_neurons_from_file(swcpath,is_tar=is_tar,prefix=tile_name,swap_xyz=swap_xyz)
     print(str(skels.shape[0]) + " initial")
     neurons = filter_skeletons(skels,**kwargs)
     print(str(neurons.shape[0]) + " filtered")
-    patch_axon_ids(neurons)
     keypts = [keypoint_from_neuron(neuron,name=tile_name+str(neuron.id),ori=ori,swcmip=swcmip) for neuron in neurons]
     surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,**kwargs)
     write_keypoints_to_file(surfkeypts,outputpath)

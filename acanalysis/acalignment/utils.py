@@ -48,23 +48,27 @@ def read_navis_neurons_tar(tar_fn, concurrency=10, preprocess_func=None):
             for m in t.getmembers():
                 swc_b = t.extractfile(m).read()
                 futs.append(e.submit(navis.io.read_swc,f=swc_b.decode(),swcname=m.name))
-        navis_neurons = navis.NeuronList([
-            preprocess_func(fut.result()) for
-            fut in concurrent.futures.as_completed(futs) if not fut.result() is None])
+        neurons = [preprocess_func(fut.result()) for
+            fut in concurrent.futures.as_completed(futs)]
+        navis_neurons = navis.NeuronList([n for n in neurons if not n is None])
     return navis_neurons
 
 
-def get_axons_from_tar(tar_fn,concurrency=10,preprocess_func=None):
-    axons = read_navis_neurons_tar(tar_fn,concurrency=concurrency,preprocess_func=preprocess_func)
-    for axon in axons:
-        axon.name = axon.swcname.split(".")[-2]
+def get_axons_from_tar(tar_fn,concurrency=10,prefix='',swap_xyz=None,id_list=None):
+    func = lambda x: patch_axon(x,prefix,swap_xyz,id_list)
+    axons = read_navis_neurons_tar(tar_fn,concurrency=concurrency,preprocess_func=func)
     return axons
 
 
-def patch_axon_ids(axons):
-    id_func = current_id_func
-    for axon in axons:
-        axon.id = id_func(axon)
+def patch_axon(axon,prefix='',swap_xyz=None,id_list=None):
+    aid = current_id_func(axon)
+    axon.id = aid
+    axon.name = prefix + aid if prefix else axon.swcname.split(".")[-2]
+    if not swap_xyz is None and swap_xyz:
+        axon.nodes[["x","y","z"]] = axon.nodes[swap_xyz]
+    if not id_list is None and not aid in id_list:
+        return None
+    return axon
         
 
 def current_id_func(axon):
@@ -73,14 +77,12 @@ def current_id_func(axon):
     return aid
 
 
-def read_neurons_from_file(filepath,is_tar=False,id_list=None):
+def read_neurons_from_file(filepath,is_tar=False,prefix='',swap_xyz=None,id_list=None):
     if is_tar:
-        if id_list is None:
-            preprocess_func = None
-        else:
-            preprocess_func = lambda x: x if current_id_func(x) in id_list else None
-        skels = get_axons_from_tar(filepath,preprocess_func=preprocess_func)
+        neurons = get_axons_from_tar(filepath,prefix=prefix,swap_xyz=swap_xyz,id_list=id_list)
     else:
-        skels = get_axon_list_from_subtrees(navis.read_swc(filepath))
-        skels = navis.NeuronList(skels)
-    return skels
+        neurons = get_axon_list_from_subtrees(navis.read_swc(filepath))
+        for n in neurons:
+            patch_axon(n,prefix)
+        neurons = navis.NeuronList(neurons)
+    return neurons
