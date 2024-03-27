@@ -79,10 +79,13 @@ def current_id_func(axon):
 
 def read_neurons_from_file(filepath,is_tar=False,prefix='',swap_xyz=None,id_list=None):
     if is_tar:
-        neurons = get_axons_from_tar(filepath,prefix=prefix,swap_xyz=swap_xyz,id_list=id_list)
+        navis_neurons = get_axons_from_tar(filepath,prefix=prefix,swap_xyz=swap_xyz,id_list=id_list)
     else:
         neurons = get_axon_list_from_subtrees(navis.read_swc(filepath))
+        patched = []
         for n in neurons:
-            patch_axon(n,prefix)
-        neurons = navis.NeuronList(neurons)
-    return neurons
+            p = patch_axon(n,prefix=prefix,swap_xyz=swap_xyz,id_list=id_list)
+            if not p is None:
+                patched.append(p)
+        navis_neurons = navis.NeuronList(patched)
+    return navis_neurons
