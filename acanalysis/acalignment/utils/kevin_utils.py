@@ -118,19 +118,22 @@ def str_from_ori(ori):
 
 def create_mat_json(matjspath,
                     alignjs,
+                    output_path=".",
+                    miplvl=1,
                     matrixfiles=["","model.npy"]):
     sections = []
     for i,s in enumerate(alignjs["sections"]):
         ntiles = len(s["tiles"])
         oristr = str_from_ori(s["ori"])
         sections.append({
-            "base_path":alignjs["output_path"],
+            "align_path":alignjs["output_path"],
+            "mip_level":miplvl,
             "sources":[get_src_from_json(get_json_path_from_roi(s),s["plane_id"],tid) for tid in s["tiles"]],
             "surface_maps":[get_roi_label(s,n) + "_" + oristr + ".npy" for n in range(ntiles)],
             "matrix_file":matrixfiles[i]
         })
     matjs = {
-        "output_path":alignjs["output_path"],
+        "output_path":output_path,
         "sections":sections
     }
     with open(matjspath,"w+") as f:
