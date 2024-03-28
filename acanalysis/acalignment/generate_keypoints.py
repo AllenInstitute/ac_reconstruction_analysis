@@ -10,7 +10,7 @@ import numpy
 from scipy.interpolate import RegularGridInterpolator as RGI
 
 from acanalysis.acalignment.keypoints import KeyPoint,write_keypoints_to_file
-from acanalysis.acalignment.utils import read_neurons_from_file
+from acanalysis.acalignment.utils.swc_utils import read_neurons_from_file
 
 def ori_lookup(ori):
     oriTuple = {
