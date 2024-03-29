@@ -120,7 +120,8 @@ def create_mat_json(matjspath,
                     alignjs,
                     output_path=".",
                     miplvl=1,
-                    matrixfiles=["","model.npy"]):
+                    matrixfiles=["","model.npy"],
+                    **kwargs):
     sections = []
     for i,s in enumerate(alignjs["sections"]):
         ntiles = len(s["tiles"])
@@ -136,5 +137,6 @@ def create_mat_json(matjspath,
         "output_path":output_path,
         "sections":sections
     }
+    matjs.update(kwargs)
     with open(matjspath,"w+") as f:
         json.dump(matjs,f,indent=4)
