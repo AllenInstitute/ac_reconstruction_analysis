@@ -28,11 +28,15 @@ class KeyPoint:
     vector: numpy.ndarray
     
     def tojson(self):
+        vec = self.vector.tolist() if not self.vector is None else None
         return {
             "name":self.name,
             "location":self.location.tolist(),
-            "vector":self.vector.tolist()
+            "vector":vec
         }
+    
+    def copy(self):
+        return KeyPoint(name=self.name,location=self.location,vector=self.vector)
 
 
 class KeypointEncoder(json.JSONEncoder):

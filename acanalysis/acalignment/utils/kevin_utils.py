@@ -43,7 +43,8 @@ def gkp_inputs_from_alignjs(alignjs,
                             swap_xyz=None,
                             mincablelength=None,
                             minradius=None,
-                            distance=0):
+                            distance=0,
+                            z_range=None):
     swap_xyz = [] if swap_xyz is None else swap_xyz
     inputs = []
     outpath = Path(alignjs.get("output_path"))
@@ -80,7 +81,8 @@ def gkp_inputs_from_alignjs(alignjs,
                 "roi_coords":roi_coords,
                 "mincablelength":mincablelength,
                 "minradius":minradius,
-                "distance":distance
+                "distance":distance,
+                "z_range":z_range
             }
             if not swckwargs is None:
                 for key in swckwargs:

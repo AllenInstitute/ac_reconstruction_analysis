@@ -10,16 +10,11 @@ import numpy
 from scipy.interpolate import RegularGridInterpolator as RGI
 
 from acanalysis.acalignment.keypoints import KeyPoint,write_keypoints_to_file
-from acanalysis.acalignment.utils.swc_utils import read_neurons_from_file
+from acanalysis.acalignment.utils.swc_utils import read_neurons_from_file,ori_table
+
 
 def ori_lookup(ori):
-    oriTuple = {
-        "+x": ("x", "POS", 0),
-        "-x": ("x", "NEG", 0),
-        "+z": ("z", "POS", 2),
-        "-z": ("z", "NEG", 2)
-    }[ori]
-    return oriTuple
+    return ori_table(ori)
 
 
 def keypoint_from_neuron(neuron,name='',ori=None,swcmip=0):
@@ -52,16 +47,17 @@ def keypoint_from_neuron(neuron,name='',ori=None,swcmip=0):
     i_end = loc_func(endpts[:,idx])
     loc0 = endpts[i_end]
     n = neuron.nodes.shape[0]
-    nend = int(10/(2**swcmip))
+    nend = int(8/(2**swcmip))
     if i_end == 1:
         i1 = n-1 if n<=nend else nend
     else:
         i1 = n-nend if n>nend else 0
-    loc1 = numpy.array(neuron.nodes.loc[i1,["x","y","z"]].tolist())
+    loc1 = neuron.nodes.loc[i1,["x","y","z"]].to_numpy()
     norm = numpy.linalg.norm(loc1-loc0)
     if norm > 0:
         vec = (loc1-loc0)/norm
     else:
+        # print(str(loc0) + " to " + str(loc1))
         vec = None
     if idx == 0: 
         location = loc0
@@ -75,26 +71,26 @@ def keypoint_from_neuron(neuron,name='',ori=None,swcmip=0):
     return KeyPoint(name=name,location=location,vector=vector)
 
 
-def filter_skeletons(neurons,names=None,ids=None,mincablelength=None,minradius=None,**kwargs):
-    filtered = []
-    for n in neurons:
-        good = True
-        if not names is None:
-            good = n.name in names
-        if not ids is None:
-            good = n.id in ids
-        if not mincablelength is None:
-            good = n.cable_length >= mincablelength
-        if not minradius is None:
-            good = n.nodes.radius.mean() >= minradius
-        if good:
-            filtered.append(n)
-    if filtered:
-        return navis.NeuronList(filtered)
-    return None
+# def filter_skeletons(neurons,names=None,ids=None,mincablelength=None,minradius=None,**kwargs):
+#     filtered = []
+#     for n in neurons:
+#         good = True
+#         if not names is None:
+#             good = n.name in names
+#         if not ids is None:
+#             good = n.id in ids
+#         if not mincablelength is None:
+#             good = n.cable_length >= mincablelength
+#         if not minradius is None:
+#             good = n.nodes.radius.mean() >= minradius
+#         if good:
+#             filtered.append(n)
+#     if filtered:
+#         return navis.NeuronList(filtered)
+#     return None
 
 
-def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords=None,**kwargs):
+def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,surf_grid=None,roi_coords=None,**kwargs):
     axis, sign, idx = ori_lookup(ori)
     # indices = [0,1,2]
     # indices.pop(idx)
@@ -103,7 +99,16 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
         hlist = numpy.array([keypt.location[0] for keypt in keypts])
     else:
         print("Interpolating surface map")
-        interp = RGI((numpy.arange(surf_map.shape[0]),numpy.arange(surf_map.shape[1])),surf_map,method="nearest")
+        if surf_grid is None:
+            gridy = numpy.arange(surf_map.shape[0])
+            gridx = numpy.arange(surf_map.shape[1])
+        elif len(surf_grid) == 2 and type(surf_grid[0]) == int:
+            gridy = surf_grid[0] + numpy.arange(surf_map.shape[0])
+            gridx = surf_grid[1] + numpy.arange(surf_map.shape[1])
+        else:
+            gridy = surf_grid[0]
+            gridx = surf_grid[1]
+        interp = RGI((gridy,gridx),surf_map,method="nearest")
     KeyPtList = []
     if not roi_coords is None:
         coord_axes = [a for a in range(len(roi_coords)) if roi_coords[a]]
@@ -124,8 +129,8 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,roi_coords
         if surf_map is None:
             KeyPtList = [kp for kp in keypts if not kp.vector is None]
         else:
-            KeyPtList = [kp for kp in keypts if (not kp.vector is None) and (kp.location[2] < surf_map.shape[1])]
-    print(len(KeyPtList))
+            KeyPtList = [kp for kp in keypts if not kp.vector is None and kp.location[1] > gridy[0] and kp.location[1] < gridy[-1] and kp.location[2] > gridx[0] and kp.location[2] < gridx[-1]]
+    print(str(len(KeyPtList)) + " within interp grid")
     if sign == "POS":
         if surf_map is None:
             hmax = hlist.max()
@@ -153,6 +158,7 @@ def generate_keypoint_file(swcpath,
                            swap_xyz=[],
                            tile_name='',
                            surf_file='',
+                           z_range=None,
                            **kwargs):
     """write json file containing list of keypoints generated from all skeletons
     
@@ -182,14 +188,21 @@ def generate_keypoint_file(swcpath,
     """
     if surf_file:
         surf = numpy.load(surf_file)
+        if z_range is None:
+            offset = (0,0)
+        else:
+            offset = (0,z_range[0]*(2**swcmip))
     else:
         surf = None
-    skels = read_neurons_from_file(swcpath,is_tar=is_tar,prefix=tile_name,swap_xyz=swap_xyz)
-    print(str(skels.shape[0]) + " initial")
-    neurons = filter_skeletons(skels,**kwargs)
+    print("reading from " + str(swcpath))
+    neurons = read_neurons_from_file(swcpath,is_tar=is_tar,prefix=tile_name,swap_xyz=swap_xyz,ori=ori,z_range=z_range,**kwargs)
+    #print(str(skels.shape[0]) + " initial")
+    #neurons = filter_skeletons(skels,**kwargs)
     print(str(neurons.shape[0]) + " filtered")
     keypts = [keypoint_from_neuron(neuron,name=tile_name+str(neuron.id),ori=ori,swcmip=swcmip) for neuron in neurons]
-    surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,**kwargs)
+    print(len(keypts))
+    write_keypoints_to_file(keypts,outputpath)
+    surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,surf_grid=offset,**kwargs)
     write_keypoints_to_file(surfkeypts,outputpath)
     print("saved keypoints to " + str(outputpath))
 

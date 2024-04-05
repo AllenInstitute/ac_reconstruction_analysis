@@ -149,7 +149,10 @@ def write_swc_state(zarrFile, tileGroup, precompDir, outputFile, **kwargs):
         zparams = get_zarr_params(zpath,tileGroup)
         slayer = create_seg_layer(precompDir, zparams, **kwargs)
         with open(outputFile, "w+") as f:
-            json.dump(slayer, f, indent=4)        
+            json.dump(slayer, f, indent=4) 
+        print(json.dumps(slayer))
+    else:
+        print("zarr not found")
 
 
 class SwcCoordinateParameters(argschema.schemas.DefaultSchema):

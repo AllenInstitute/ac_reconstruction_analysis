@@ -13,6 +13,17 @@ from io import BytesIO
 import tarfile
 from acanalysis.splitup_swc import get_axon_list_from_subtrees
 
+
+def ori_table(ori):
+    oriTuple = {
+        "+x": ("x", "POS", 0),
+        "-x": ("x", "NEG", 0),
+        "+z": ("z", "POS", 2),
+        "-z": ("z", "NEG", 2)
+    }[ori]
+    return oriTuple
+
+
 def shift_navis_xform(skels,shift_xyz):
     M = numpy.diag([1,1,1,1])
     if shift_xyz:
@@ -54,37 +65,62 @@ def read_navis_neurons_tar(tar_fn, concurrency=10, preprocess_func=None):
     return navis_neurons
 
 
-def get_axons_from_tar(tar_fn,concurrency=10,prefix='',swap_xyz=None,id_list=None):
-    func = lambda x: patch_axon(x,prefix,swap_xyz,id_list)
+def get_axons_from_tar(tar_fn,concurrency=10,prefix='',swap_xyz=None,patch_func=None):
+    func = lambda x: patch_axon(x,prefix,swap_xyz,filter_func=patch_func)
     axons = read_navis_neurons_tar(tar_fn,concurrency=concurrency,preprocess_func=func)
     return axons
 
 
-def patch_axon(axon,prefix='',swap_xyz=None,id_list=None):
+def patch_axon(axon,prefix='',swap_xyz=None,filter_func=None):
     aid = current_id_func(axon)
     axon.id = aid
     axon.name = prefix + aid if prefix else axon.swcname.split(".")[-2]
     if not swap_xyz is None and swap_xyz:
         axon.nodes[["x","y","z"]] = axon.nodes[swap_xyz]
-    if not id_list is None and not aid in id_list:
+    if not filter_func is None and not filter_func(axon):
         return None
     return axon
+
+
+def axon_filter_func(axon,id_list=None,z_range=None,ori='',mincablelength=0,minradius=0,**kwargs):
+    if not id_list is None:
+        if not axon.id in id_list:
+            return False
+    if not z_range is None and len(z_range)==2 and ori:
+        axis, sign, idx = ori_table(ori)
+        xlocs = axon.nodes.iloc[[0,-1]].x.to_numpy()
+        zlocs = axon.nodes.iloc[[0,-1]].z.to_numpy()
+        loc_func = {
+            "POS": numpy.argmax,
+            "NEG": numpy.argmin
+        }[sign]
+        i_end = loc_func(xlocs)
+        z = zlocs[i_end]
+        if not (z > z_range[0] and z < z_range[1]):
+            return False
+    if mincablelength > 0 and axon.cable_length < mincablelength:
+        return False
+    if minradius > 0 and axon.nodes.radius.mean() < minradius:
+        return False
+    return True
+        
         
 
 def current_id_func(axon):
-    a = axon.nodes.loc[0]
-    aid = str(int(a.z)) + str(int(a.y)) + str(int(a.x))
+    a = axon.nodes.iloc[0]
+    aid = str(int(numpy.abs(a.z))) + str(int(numpy.abs(a.y))) + str(int(numpy.abs(a.x)))
     return aid
 
 
-def read_neurons_from_file(filepath,is_tar=False,prefix='',swap_xyz=None,id_list=None):
+def read_neurons_from_file(filepath,is_tar=False,prefix='',swap_xyz=None,id_list=None,ori='',**filter_kwargs):
+    patch_func = lambda x: axon_filter_func(x,id_list=id_list,ori=ori,**filter_kwargs)
     if is_tar:
-        navis_neurons = get_axons_from_tar(filepath,prefix=prefix,swap_xyz=swap_xyz,id_list=id_list)
+        navis_neurons = get_axons_from_tar(filepath,prefix=prefix,swap_xyz=swap_xyz,patch_func=patch_func)
     else:
         neurons = get_axon_list_from_subtrees(navis.read_swc(filepath))
         patched = []
         for n in neurons:
-            p = patch_axon(n,prefix=prefix,swap_xyz=swap_xyz,id_list=id_list)
+            p = patch_axon(n,prefix=prefix,swap_xyz=swap_xyz,filter_func=patch_func)
             if not p is None:
                 patched.append(p)
         navis_neurons = navis.NeuronList(patched)
