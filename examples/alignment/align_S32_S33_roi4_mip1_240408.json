@@ -1,0 +1,79 @@
+{
+	"output_path":"./roi4_mip1_240408",
+	"sections":[
+		{
+			"ac_datasets_path":"J:/Users/kevin/ac_datasets",
+			"section_id":"H17_x55_S32",
+			"acq_id":"230412",
+			"plane_id":"plane2",
+			"ori":"-x",
+			"tiles": ["Pos94","Pos95","Pos96"],
+			"cutouts":[
+				{
+					"z":[26000,30000],
+					"y":[0,576],
+					"x":[0,576]
+				},
+				{
+					"z":[26000,30000],
+					"y":[0,576],
+					"x":[0,576]
+				},
+				{
+					"z":[26000,30000],
+					"y":[0,576],
+					"x":[0,576]
+				}
+			],
+			"position_offsets":[[0,984,0],[0,492,0],[0,0,0]],
+			"stitch_json":"",
+			"swc_mip": 1,
+			"swc_path":"J:/Users/connorl/Skeletons/H17_x55_S32_230412_highres_MIP1/Reconnected",
+			"swc_kwargs": {
+		        "is_tar":true,
+		        "swap_xyz":["z","y","x"],
+		        "mincablelength":0,
+		        "minradius":0,
+		        "distance":50,
+		        "z_range":[13000,15000]
+		    }
+		},
+		{
+			"ac_datasets_path":"J:/Users/kevin/ac_datasets",
+			"section_id":"H17_x55_S33",
+			"acq_id":"230413",
+			"plane_id":"plane1",
+			"ori":"+x",
+			"tiles": ["Pos58","Pos59","Pos60"],
+			"cutouts":[
+				{
+					"z":[28000,32000],
+					"y":[0,576],
+					"x":[0,576]
+				},
+				{
+					"z":[28000,32000],
+					"y":[0,576],
+					"x":[0,576]
+				},
+				{
+					"z":[28000,32000],
+					"y":[0,576],
+					"x":[0,576]
+				}
+			],
+			"position_offsets":[[0,984,0],[0,492,0],[0,0,0]],
+			"stitch_json":"",
+			"swc_mip": 1,
+			"swc_path":"J:/Users/connorl/Skeletons/H17_x55_S33_230413_highres_MIP1/Reconnected",
+			"swc_kwargs": {
+		        "is_tar":true,
+		        "swap_xyz":["z","y","x"],
+		        "mincablelength":0,
+		        "minradius":0,
+		        "distance":50,
+		        "z_range":[14000,16000]
+		    }
+		}
+	]
+}
