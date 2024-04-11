@@ -1,0 +1,157 @@
+{
+    "output_path": "J:/Users/kevin/alignment_files/ac_align/S32S33/roi1_mip0",
+    "sections": [
+        {
+            "ac_datasets_path":"J:/Users/kevin/ac_datasets",
+            "section_id":"H17_x55_S32",
+            "acq_id":"230412",
+            "plane_id":"plane1",
+            "ori":"-x",
+            "tiles": [
+                "Pos52",
+                "Pos53",
+                "Pos54"
+            ],
+            "cutouts": [
+                {
+                    "z": [
+                        23000,
+                        27000
+                    ],
+                    "y": [
+                        0,
+                        576
+                    ],
+                    "x": [
+                        0,
+                        576
+                    ]
+                },
+                {
+                    "z": [
+                        23000,
+                        27000
+                    ],
+                    "y": [
+                        0,
+                        576
+                    ],
+                    "x": [
+                        0,
+                        576
+                    ]
+                },
+                {
+                    "z": [
+                        23000,
+                        27000
+                    ],
+                    "y": [
+                        0,
+                        576
+                    ],
+                    "x": [
+                        0,
+                        576
+                    ]
+                }
+            ],
+            "position_offsets": [
+                [
+                    0,
+                    985,
+                    0
+                ],
+                [
+                    0,
+                    492,
+                    0
+                ],
+                [
+                    0,
+                    0,
+                    0
+                ]
+            ],
+            "stitch_json": "",
+            "swc_mip": 0,
+            "swc_path": "J:/Users/kevin/skeletons/connor_swc/roi2_mip0/S32"
+        },
+        {
+            "ac_datasets_path":"J:/Users/kevin/ac_datasets",
+            "section_id":"H17_x55_S33",
+            "acq_id":"230413",
+            "plane_id":"plane1",
+            "ori":"+x",
+            "tiles": [
+                "Pos53",
+                "Pos54",
+                "Pos55"
+            ],
+            "cutouts": [
+                {
+                    "z": [
+                        25600,
+                        29600
+                    ],
+                    "y": [
+                        0,
+                        576
+                    ],
+                    "x": [
+                        0,
+                        576
+                    ]
+                },
+                {
+                    "z": [
+                        25600,
+                        29600
+                    ],
+                    "y": [
+                        0,
+                        576
+                    ],
+                    "x": [
+                        0,
+                        576
+                    ]
+                },
+                {
+                    "z": [
+                        25600,
+                        29600
+                    ],
+                    "y": [
+                        0,
+                        576
+                    ],
+                    "x": [
+                        0,
+                        576
+                    ]
+                }
+            ],
+            "position_offsets": [
+                [
+                    0,
+                    985,
+                    0
+                ],
+                [
+                    0,
+                    492,
+                    0
+                ],
+                [
+                    0,
+                    0,
+                    0
+                ]
+            ],
+            "stitch_json": "",
+            "swc_mip": 0,
+            "swc_path": "J:/Users/kevin/skeletons/connor_swc/roi2_mip0/S33"
+        }
+    ]
+}
