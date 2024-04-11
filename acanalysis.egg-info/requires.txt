@@ -1,5 +1,0 @@
-numpy
-navis
-argschema
-scikit-image
-render-python
