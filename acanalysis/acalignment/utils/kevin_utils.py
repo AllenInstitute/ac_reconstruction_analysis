@@ -132,6 +132,8 @@ def create_mat_json(matjspath,
             "align_path":alignjs["output_path"],
             "mip_level":miplvl,
             "sources":[get_src_from_json(get_json_path_from_roi(s),s["plane_id"],tid) for tid in s["tiles"]],
+            "cutouts":s["cutouts"],
+            "position_offsets":s["position_offsets"],
             "surface_maps":[get_roi_label(s,n) + "_" + oristr + ".npy" for n in range(ntiles)],
             "matrix_file":matrixfiles[i]
         })
