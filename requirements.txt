@@ -3,3 +3,8 @@ navis
 argschema
 scikit-image
 render-python
+pymaid
+pathos
+neuroglancer
+greenlet==0.4.17
+cloud-volume

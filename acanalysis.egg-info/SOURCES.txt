@@ -19,3 +19,8 @@ acanalysis/acalignment/utils/__init__.py
 acanalysis/acalignment/utils/kevin_utils.py
 acanalysis/acalignment/utils/olga_utils.py
 acanalysis/acalignment/utils/swc_utils.py
+acanalysis/skeleton_reconstruction/__init__.py
+acanalysis/skeleton_reconstruction/catmaid.py
+acanalysis/skeleton_reconstruction/merge_skeletons.py
+acanalysis/skeleton_reconstruction/neuroglancer.py
+acanalysis/skeleton_reconstruction/util.py

@@ -4,5 +4,15 @@ Version: 0.0.0
 Summary: Axonal connectomics reconstruction analysis
 Author: Russel Torres
 Author-email: 
+Requires-Dist: numpy
+Requires-Dist: navis
+Requires-Dist: argschema
+Requires-Dist: scikit-image
+Requires-Dist: render-python
+Requires-Dist: pymaid
+Requires-Dist: pathos
+Requires-Dist: neuroglancer
+Requires-Dist: greenlet==0.4.17
+Requires-Dist: cloud-volume
 
 Tools for processing axonal connectomics reconstructions
