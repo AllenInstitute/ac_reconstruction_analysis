@@ -12,10 +12,9 @@ def get_submod(directory, filetype):
 path = os.path.normpath(os.path.dirname(os.path.realpath(__file__)) + os.sep + os.pardir) + '/acanalysis/'
 matches = ['init','test']
 submods = get_submod(path, '*.py')
-submods = [x.split('ac_reconstruction_analysis/')[1].replace('/','.').replace('.py','') for x in submods]
+submods = ['acanalysis.'+x.split('acanalysis/')[1].replace('/','.').replace('.py','') for x in submods]
 submods = [ x for x in submods if any(y in x for y in matches)==False]
 
 @pytest.mark.parametrize("mod", submods)
 def test_import(mod):
     imp = __import__(mod)
-      
