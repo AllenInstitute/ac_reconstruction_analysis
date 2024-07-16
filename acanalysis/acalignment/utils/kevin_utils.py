@@ -7,8 +7,16 @@ Created on Wed Mar 27 09:04:15 2024
 
 from pathlib import Path
 import json
-from acpreprocessing.stitching_modules.acstitch.zarrutils import get_src_from_json
 import pandas
+import json
+
+
+def get_src_from_json(sourcejson,plane,tile):
+    with open(sourcejson,'r') as f:
+        js = json.load(f)
+    srcList = js[plane]['sources']
+    ind = [s.split("_")[-1] for s in srcList].index(tile)
+    return srcList[ind]
 
 def surf_inputs_from_alignjs(alignjs,
                              miplvl=0):
