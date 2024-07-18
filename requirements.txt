@@ -3,8 +3,11 @@ navis
 argschema
 scikit-image
 render-python
-pymaid
-pathos
+python-catmaid
+pytest==6.2.5
 neuroglancer
-greenlet==0.4.17
-cloud-volume
+mpyicbg @ git+https://github.com/RussTorres/m-py-icbg.git@main
+zarr
+pathos
+cloud-volume==8.3.0
+natsort
