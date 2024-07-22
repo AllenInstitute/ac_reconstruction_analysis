@@ -9,5 +9,5 @@ neuroglancer
 mpyicbg @ git+https://github.com/RussTorres/m-py-icbg.git@main
 zarr
 pathos
-cloud-volume==8.3.0
 natsort
+cloud-volume>=8.5.5
