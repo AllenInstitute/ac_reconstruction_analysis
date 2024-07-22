@@ -4,5 +4,15 @@ Version: 0.0.0
 Summary: Axonal connectomics reconstruction analysis
 Author: Russel Torres
 Author-email: 
+Requires-Dist: numpy
+Requires-Dist: navis
+Requires-Dist: argschema
+Requires-Dist: scikit-image
+Requires-Dist: render-python
+Requires-Dist: python-catmaid
+Requires-Dist: pytest==6.2.5
+Requires-Dist: neuroglancer
+Requires-Dist: mpyicbg@ git+https://github.com/RussTorres/m-py-icbg.git@main
+Requires-Dist: zarr
 
 Tools for processing axonal connectomics reconstructions
