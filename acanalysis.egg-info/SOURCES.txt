@@ -1,4 +1,7 @@
+MANIFEST.in
 README.md
+requirements.txt
+setup.cfg
 setup.py
 acanalysis/__init__.py
 acanalysis/save_cutout_for_segmentation.py
@@ -19,3 +22,5 @@ acanalysis/acalignment/utils/__init__.py
 acanalysis/acalignment/utils/kevin_utils.py
 acanalysis/acalignment/utils/olga_utils.py
 acanalysis/acalignment/utils/swc_utils.py
+test/__init__.py
+test/test_import.py
