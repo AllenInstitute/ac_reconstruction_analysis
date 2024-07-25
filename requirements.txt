@@ -3,3 +3,11 @@ navis
 argschema
 scikit-image
 render-python
+python-catmaid
+pytest==6.2.5
+neuroglancer
+mpyicbg
+zarr
+pathos
+natsort
+cloud-volume>=8.5.5
