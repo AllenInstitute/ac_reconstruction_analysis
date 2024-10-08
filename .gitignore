@@ -159,6 +159,10 @@ test-reports/
 *.mo
 *.pot
 
+# Pixi stuff
+.pixi/
+pixi.lock
+
 # Django stuff:
 *.log
 local_settings.py
