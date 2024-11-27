@@ -302,13 +302,14 @@ def swc_split_branches(morph_in, min_nodes):
 
         # Find branching nodes
         branch_nodes = list(neu.branch_points['node_id'])
-        if len(branch_nodes) > 0:
+        if len(branch_nodes)>0:
             # Split branches
             for i in branch_nodes:
                 children = list(neu.nodes.loc[neu.nodes['parent_id'] == i, 'node_id'])
                 for child in children:
                     neu.nodes.loc[neu.nodes['node_id'] == child, 'parent_id'] = -1
-        
+
+        if len(neu.root)>1 or len(branch_nodes)>0:
             # Break fragments
             frag = navis.break_fragments(neu)
             for fr in frag:
