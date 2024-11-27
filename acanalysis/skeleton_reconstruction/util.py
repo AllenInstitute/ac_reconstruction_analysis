@@ -274,7 +274,7 @@ def merge_pairs(neuro_list, pair_data, thresh = None, min_collin = None):
         for neu in com:
             group.append(neuro_list[neuro_list.id == neu])
         new_neu = navis.stitch_skeletons(group, method='LEAFS')
-        if len(new_neu.branch_points) == 0 and len(new_neu.ends) < 3::
+        if len(new_neu.branch_points) == 0:
             for neu in group:
                 neuro_list = neuro_list[(neuro_list.id != neu.id)]  
         
