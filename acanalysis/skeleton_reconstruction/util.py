@@ -242,6 +242,7 @@ def find_pairs(neuro_list, query_dis=15, min_collin = 0.1, sc = None, cl = None,
 def merge_pairs(neuro_list, pair_data, thresh = None, min_collin = None):
     merge_num = 0
     merge_list = []
+    id_remap = {}
     if min_collin:
         pair_data = [x for x in pair_data if ((len(np.where(x[1][2:6] < min_collin)[0])==0))]                   
     if thresh:
@@ -276,17 +277,19 @@ def merge_pairs(neuro_list, pair_data, thresh = None, min_collin = None):
         new_neu = navis.stitch_skeletons(group, method='LEAFS')
         if len(new_neu.branch_points) == 0:
             for neu in group:
-                neuro_list = neuro_list[(neuro_list.id != neu.id)]  
-        
+                id_remap[neu.id[0]]=new_neu.id
+                neuro_list = neuro_list[(neuro_list.id != neu.id)]
+                
             #append to merge list
             merge_list.append(new_neu)  
 
     #reset soma to none
     for neu in neuro_list:
         neu.soma = None
-        
+
+    id_remap = {key: value for key, value in id_remap.items() if key != value}
     print('Pairs Merged: ', merge_num)
-    return neuro_list, navis.NeuronList(merge_list)
+    return neuro_list, navis.NeuronList(merge_list), id_remap
 
 def swc_prune(skels, pruning_threshold = 10):
     skels = navis.prune_twigs(skels, pruning_threshold)
