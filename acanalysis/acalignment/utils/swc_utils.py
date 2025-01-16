@@ -125,3 +125,59 @@ def read_neurons_from_file(filepath,is_tar=False,prefix='',swap_xyz=None,id_list
                 patched.append(p)
         navis_neurons = navis.NeuronList(patched)
     return navis_neurons
+
+def read_navis_neurons_tar(tar_fn, concurrency=10, preprocess_func=None, read_func=None, include_null=False, limit=None):
+    preprocess_func = ((lambda x: x) if preprocess_func is None else preprocess_func)
+    #read_func = (navis.io.read_swc if read_func is None else read_func)
+
+    with concurrent.futures.ProcessPoolExecutor(max_workers=concurrency) as e:
+        futs = []
+        with tarfile.open(tar_fn, "r:gz") as t:
+            print(len(t.getmembers()))
+            for i, m in enumerate(t.getmembers()):
+                swc_b = t.extractfile(m).read()
+                futs.append(e.submit(navis.io.read_swc, swc_b.decode()))
+                if limit is None or i < (limit-1):
+                    continue
+                break
+        result_neurons = [
+            preprocess_func(fut.result()) for
+            fut in concurrent.futures.as_completed(futs)]
+    return navis.NeuronList([n for n in result_neurons if not n is None]) #filter(lambda x: include_null or x is not None, result_neurons))
+
+
+def read_navis_neurons_swc(swc_fn, concurrency=10, preprocess_func=None, include_null=False):
+    preprocess_func = ((lambda x: x) if preprocess_func is None else preprocess_func)
+    result_neurons = [preprocess_func(n) for n in get_axon_list_from_subtrees(navis.read_swc(swc_fn))]
+    return navis.NeuronList(filter(lambda x: include_null or x is not None, result_neurons))
+
+def bbox_in_cutout(bbox, cutout):
+    xmin, xmax = bbox[0]
+    ymin, ymax = bbox[1]
+    zmin, zmax = bbox[2]
+    zrange = cutout["z"]
+    yrange = cutout["y"]
+    xrange = cutout["x"]
+
+    intersects = (
+        ((zmax >= zrange[0]) and
+         (zmin <= zrange[1])) and
+        ((ymax >= yrange[0]) and
+         (ymin <= yrange[1])) and
+        ((xmax >= xrange[0]) and
+         (xmin <= xrange[1]))
+    )
+    return intersects
+
+
+def preprocess_filter_neuron_by_cutout(n, cutout=None):
+    if cutout is None or bbox_in_cutout(n.bbox, cutout):
+        return n
+
+def preprocess_swap_xyz(n):
+    n.nodes[["x", "z"]] = n.nodes[["z", "x"]]
+    return n
+
+def preprocess_translate(n, x_translation=0, y_translation=0, z_translation=0):
+    n.nodes[["x", "y", "z"]] = n.nodes[["x", "y", "z"]].to_numpy() + numpy.array([x_translation, y_translation, z_translation])
+    return n

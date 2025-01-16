@@ -92,7 +92,9 @@ def gkp_inputs_from_alignjs(alignjs,
 
 def get_tar_path(args,i):
     tid = args.get("tiles")[i]
-    return Path(args.get("swc_path")) / Path("highres_" + tid + ".swcs.tar.gz")
+    #fpath = Path("highres_" + tid + ".swcs.tar.gz")
+    fpath = Path(tid + ".zarr.swcs.tar.gz")
+    return Path(args.get("swc_path")) / fpath
 
 def get_swc_path(args,i):
     tid = args.get("tiles")[i]

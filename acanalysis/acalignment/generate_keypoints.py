@@ -10,7 +10,7 @@ import numpy
 from scipy.interpolate import RegularGridInterpolator as RGI
 
 from acanalysis.acalignment.keypoints import KeyPoint,write_keypoints_to_file
-from acanalysis.acalignment.utils.swc_utils import read_neurons_from_file,ori_table
+from acanalysis.acalignment.utils.swc_utils import read_neurons_from_file,ori_table,read_navis_neurons_tar,preprocess_filter_neuron_by_cutout
 
 
 def ori_lookup(ori):
@@ -69,25 +69,6 @@ def keypoint_from_neuron(neuron,name='',ori=None,swcmip=0):
     vector = vec
     
     return KeyPoint(name=name,location=location,vector=vector)
-
-
-# def filter_skeletons(neurons,names=None,ids=None,mincablelength=None,minradius=None,**kwargs):
-#     filtered = []
-#     for n in neurons:
-#         good = True
-#         if not names is None:
-#             good = n.name in names
-#         if not ids is None:
-#             good = n.id in ids
-#         if not mincablelength is None:
-#             good = n.cable_length >= mincablelength
-#         if not minradius is None:
-#             good = n.nodes.radius.mean() >= minradius
-#         if good:
-#             filtered.append(n)
-#     if filtered:
-#         return navis.NeuronList(filtered)
-#     return None
 
 
 def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,surf_grid=None,roi_coords=None,**kwargs):
@@ -194,8 +175,17 @@ def generate_keypoint_file(swcpath,
             offset = (0,z_range[0]*(2**swcmip))
     else:
         surf = None
+
+    if z_range is None:
+        preprocess_func = lambda x:x
+    else:
+        preprocess_func = lambda n: preprocess_filter_neuron_by_cutout(n,cutout={"z":z_range,"y":[0,576],"x":[0,576]})
     print("reading from " + str(swcpath))
-    neurons = read_neurons_from_file(swcpath,is_tar=is_tar,prefix=tile_name,swap_xyz=swap_xyz,ori=ori,z_range=z_range,**kwargs)
+    if is_tar:
+        print("multiprocess read")
+        neurons = read_navis_neurons_tar(swcpath,concurrency=20,preprocess_func=preprocess_func)
+    else:
+        neurons = read_neurons_from_file(swcpath,is_tar=is_tar,prefix=tile_name,swap_xyz=swap_xyz,ori=ori,z_range=z_range,**kwargs)
     #print(str(skels.shape[0]) + " initial")
     #neurons = filter_skeletons(skels,**kwargs)
     print(str(neurons.shape[0]) + " filtered")
