@@ -53,14 +53,14 @@ def reconnect(skels, out_file = None, cl=None, sc=None, min_nodes=10, downsample
 
     try:
       # Merge segment pairs with prob above thresh
-      unmerged, merged = util.merge_pairs(skels, pair_data_iter, prob_thresh)
+      unmerged, merged, id_remap = util.merge_pairs(skels, pair_data_iter, prob_thresh)
     except:
       unmerged, merged = skels, navis.NeuronList(None)              
       
     if out_file:
       util.write_navis_skels_tar(out_file, navis.NeuronList([unmerged,merged]), mode='w:gz')
     else:
-      return unmerged, merged
+      return unmerged, merged, id_remap
             
 
     
