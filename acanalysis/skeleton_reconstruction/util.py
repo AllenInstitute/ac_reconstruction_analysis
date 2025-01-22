@@ -56,6 +56,40 @@ def get_nodes(morph_in, segment, end_node, n):
 
 
 
+
+
+def closest_points(neuron, node_id, rank=1):
+    # Retrieve the reference point from the neuron
+    ref_point = neuron.nodes.loc[neuron.nodes['node_id'] == node_id, ['x', 'y', 'z']].values
+    ref_point = ref_point[0]
+
+    # Extract all points and their corresponding node IDs
+    points = neuron.nodes[['x', 'y', 'z']].values
+    node_ids = neuron.nodes['node_id'].values
+
+    # Calculate distances from the reference point
+    distances = np.linalg.norm(points - ref_point, axis=1)
+
+    # Get the indices of the points sorted by distance in ascending order (closest first)
+    sorted_indices = np.argsort(distances)  # Ascending order (closest first)
+
+    # Get the sorted points and corresponding node IDs based on distance
+    sorted_points = points[sorted_indices]
+    sorted_node_ids = node_ids[sorted_indices]
+
+    # Get the points and node_ids up to the specified rank
+    if rank > len(sorted_points)-1:
+        rank = len(sorted_points)
+    
+    closest_ranked_points = sorted_points[:rank]  # Get the closest points up to the given rank
+    closest_ranked_node_ids = sorted_node_ids[:rank]  # Get the node IDs corresponding to the closest points
+
+    # Return the reference point, closest points, and their corresponding node IDs up to the given rank
+    return np.array(closest_ranked_points), closest_ranked_node_ids
+
+
+
+
 def calculate_vector(coords):
     # TODO replace svd w/ eigh
     _, _, vv = np.linalg.svd(coords - coords.mean(axis=0))
@@ -66,7 +100,6 @@ def calculate_vector(coords):
     if np.dot(-vector, vect_diff) > np.dot(vector, vect_diff):
         vector*=-1    
     return vector 
-
 
 def calculate_feature(ns, end_node_ids, num_nodes=(5, 50), dis_end=0):
     alt_end_node_ids = np.copy(end_node_ids)
@@ -84,19 +117,18 @@ def calculate_feature(ns, end_node_ids, num_nodes=(5, 50), dis_end=0):
     cvect = end_coords[1] - end_coords[0]
     cvect_norm = np.linalg.norm(cvect)
     cvect /= cvect_norm
-    
+
     cf = []
     for num in num_nodes:
         for i, (n, end_node_id) in enumerate(zip(ns, end_node_ids)):
-            nodes = get_bfs_neighbor_nodes(n, end_node_id, num)
-            neighbor_loc_arr = nodes[["x", "y", "z"]].to_numpy()
+            neighbor_loc_arr, nodes = closest_points(n,end_node_id, num)
+
+            if i==0 and end_node_id == nodes[0]:
+                neighbor_loc_arr = np.flip(neighbor_loc_arr, axis=0)
+                
+            if i==1 and end_node_id == nodes[-1]:
+                neighbor_loc_arr = np.flip(neighbor_loc_arr, axis=0)
             
-            if i==0 and end_node_id == nodes["node_id"].to_numpy()[0]:
-                neighbor_loc_arr = np.flip(neighbor_loc_arr, axis=0)
-                
-            if i==1 and end_node_id == nodes["node_id"].to_numpy()[-1]:
-                neighbor_loc_arr = np.flip(neighbor_loc_arr, axis=0)
-                
             vec = calculate_vector(neighbor_loc_arr)
             cf.append(np.dot(vec, cvect))
             
