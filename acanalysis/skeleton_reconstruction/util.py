@@ -711,7 +711,7 @@ def read_navis_neurons_tar(tar_fn, concurrency=10, preprocess_func=None):
     preprocess_func = ((lambda x: x) if preprocess_func is None else preprocess_func)
     with concurrent.futures.ProcessPoolExecutor(max_workers=concurrency) as e:
         futs = []
-        with tarfile.open(tar_fn, "r:gz") as t:
+        with tarfile.open(tar_fn, "r:*") as t:
             for m in t.getmembers():
                 swc_b = t.extractfile(m).read()
                 futs.append(e.submit(navis.io.read_swc, swc_b.decode()))
