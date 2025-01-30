@@ -732,15 +732,21 @@ def write_kimi_skels_tar(tar_fn, skels, mode='w:gz'):
             t.addfile(tarinfo=info, fileobj=bio)
             id += 1
             
-def write_navis_skels_tar(tar_fn, skels, mode='w:gz'):
+def write_navis_skels_tar(tar_fn, skels, mode='w:gz', swcname=False):
     with tarfile.open(tar_fn, mode=mode) as t:
         for sk in skels:
             id = sk.id
+            if swcname:
+                id = sk.swcname
             if 'label' not in sk.nodes:
                 sk.nodes.insert(1, 'label', list(np.zeros(len(sk.nodes))))
             sk = sk.nodes[['node_id', 'label','x','y','z','radius','parent_id']].values.tolist()
+            for sub in sk:
+                sub[0] = int(sub[0]) 
+                sub[1] = int(sub[1])
+                sub[-1] = int(sub[-1]) 
             sk = '\n'.join(str(x)[1:-1] for x in sk).replace(",", "")
-            bio = BytesIO(sk.encode())
+            bio = io.BytesIO(sk.encode())
             info = tarfile.TarInfo(name=f"{id}.swc")
             info.size = len(bio.getbuffer())
             t.addfile(tarinfo=info, fileobj=bio)
