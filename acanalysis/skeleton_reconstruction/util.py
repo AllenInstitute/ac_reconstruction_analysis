@@ -16,6 +16,7 @@ import concurrent
 from concurrent.futures import ThreadPoolExecutor
 import tarfile
 import uuid
+import io
 from io import BytesIO
 import copy
 import colorsys
