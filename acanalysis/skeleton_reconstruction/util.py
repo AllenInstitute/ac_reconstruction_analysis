@@ -744,7 +744,6 @@ def write_navis_skels_tar(tar_fn, skels, mode='w:gz', swcname=False):
             sk = sk.nodes[['node_id', 'label','x','y','z','radius','parent_id']].values.tolist()
             for sub in sk:
                 sub[0] = int(sub[0]) 
-                sub[1] = int(sub[1])
                 sub[-1] = int(sub[-1]) 
             sk = '\n'.join(str(x)[1:-1] for x in sk).replace(",", "")
             bio = io.BytesIO(sk.encode())
