@@ -10,7 +10,7 @@ import numpy
 from scipy.interpolate import RegularGridInterpolator as RGI
 
 from acanalysis.acalignment.keypoints import KeyPoint,write_keypoints_to_file
-from acanalysis.acalignment.utils.swc_utils import read_neurons_from_file,ori_table,read_navis_neurons_tar,preprocess_filter_neuron_by_cutout
+from acanalysis.acalignment.utils.swc_utils import read_neurons_from_file,ori_table,read_navis_neurons_tar,preprocess_filter_neuron_by_cutout,write_navis_skels_tar
 
 
 def ori_lookup(ori):
@@ -140,6 +140,7 @@ def generate_keypoint_file(swcpath,
                            tile_name='',
                            surf_file='',
                            z_range=None,
+                           save_swcs=False,
                            **kwargs):
     """write json file containing list of keypoints generated from all skeletons
     
@@ -190,9 +191,29 @@ def generate_keypoint_file(swcpath,
     #neurons = filter_skeletons(skels,**kwargs)
     print(str(neurons.shape[0]) + " filtered")
     keypts = [keypoint_from_neuron(neuron,name=tile_name+str(neuron.id),ori=ori,swcmip=swcmip) for neuron in neurons]
-    print(len(keypts))
-    write_keypoints_to_file(keypts,outputpath)
+    print(str(len(keypts)) + " keypoints")
+    #write_keypoints_to_file(keypts,outputpath)
     surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,surf_grid=offset,**kwargs)
     write_keypoints_to_file(surfkeypts,outputpath)
     print("saved keypoints to " + str(outputpath))
+    if save_swcs:
+        if 'tar_path' in kwargs:
+            write_keypoint_skels(kwargs['tar_path'],surfkeypts,neurons)
+        else:
+            print("no path to save swcs given")
 
+
+def write_keypoint_skels(tar_path,keypts,neurons):
+    skels = gather_neurons_with_keypoints(keypts,neurons)
+    print(str(len(skels)) + " skeletons")
+    write_navis_skels_tar(tar_path,skels)
+    print("writing swcs to " + str(tar_path))
+
+
+def gather_neurons_with_keypoints(keypts,neurons):
+    key_neurons = []
+    neuids = [str(n.id) for n in neurons]
+    for kp in keypts:
+        kid = kp.name.split("_")[-1]
+        key_neurons.append(neurons[neuids.index(kid)])
+    return key_neurons

@@ -44,7 +44,8 @@ def gkp_inputs_from_alignjs(alignjs,
                             mincablelength=None,
                             minradius=None,
                             distance=0,
-                            z_range=None):
+                            z_range=None,
+                            save_swcs=False):
     swap_xyz = [] if swap_xyz is None else swap_xyz
     inputs = []
     outpath = Path(alignjs.get("output_path"))
@@ -87,13 +88,16 @@ def gkp_inputs_from_alignjs(alignjs,
             if not swckwargs is None:
                 for key in swckwargs:
                     kwargs[key] = swckwargs.get(key)
+            if save_swcs:
+                kwargs["save_swcs"] = True
+                kwargs["tar_path"] = outpath / Path(roi_id + ".swcs.tar.gz")
             inputs.append(kwargs)
     return inputs
 
 def get_tar_path(args,i):
     tid = args.get("tiles")[i]
     #fpath = Path("highres_" + tid + ".swcs.tar.gz")
-    fpath = Path(tid + ".zarr.swcs.tar.gz")
+    fpath = Path(tid.upper() + ".zarr.swcs.tar.gz")
     return Path(args.get("swc_path")) / fpath
 
 def get_swc_path(args,i):

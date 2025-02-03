@@ -42,13 +42,26 @@ def read_gzip_array(fn):
     return a
 
 
-def write_kimi_skels_tar(tar_fn, skels):
-    with tarfile.open(tar_fn, mode="w:gz") as t:
-        for skid, skel in skels.items():
-            bio = BytesIO(skel.to_swc().encode())
-            info = tarfile.TarInfo(name=f"{skid}.swc")
+
+def write_navis_skels_tar(tar_fn, skels, mode='w:gz', swcname=False):
+    with tarfile.open(tar_fn, mode=mode) as t:
+        for sk in skels:
+            id = sk.id
+            if swcname:
+                id = sk.swcname
+            if 'label' not in sk.nodes:
+                sk.nodes.insert(1, 'label', list(np.zeros(len(sk.nodes))))
+            sk = sk.nodes[['node_id', 'label','x','y','z','radius','parent_id']].values.tolist()
+            for sub in sk:
+                sub[0] = int(sub[0]) 
+                sub[1] = int(sub[1])
+                sub[-1] = int(sub[-1]) 
+            sk = '\n'.join(str(x)[1:-1] for x in sk).replace(",", "")
+            bio = BytesIO(sk.encode())
+            info = tarfile.TarInfo(name=f"{id}.swc")
             info.size = len(bio.getbuffer())
             t.addfile(tarinfo=info, fileobj=bio)
+
 
 
 def read_navis_neurons_tar(tar_fn, concurrency=10, preprocess_func=None):
@@ -84,7 +97,7 @@ def patch_axon(axon,prefix='',swap_xyz=None,filter_func=None):
 
 def axon_filter_func(axon,id_list=None,z_range=None,ori='',mincablelength=0,minradius=0,**kwargs):
     if not id_list is None:
-        if not axon.id in id_list:
+        if not str(axon.id) in id_list:
             return False
     if not z_range is None and len(z_range)==2 and ori:
         axis, sign, idx = ori_table(ori)
