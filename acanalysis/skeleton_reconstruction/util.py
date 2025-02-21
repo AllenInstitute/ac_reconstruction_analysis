@@ -20,6 +20,7 @@ import io
 from io import BytesIO
 import copy
 import colorsys
+import math
 
 def distance(node1, node2, pxl_xyz):
     node1_coord = np.array((node1['x'], node1['y'], node1['z']))*pxl_xyz
@@ -57,8 +58,6 @@ def get_nodes(morph_in, segment, end_node, n):
 
 
 
-
-
 def closest_points(neuron, node_id, rank=1):
     # Retrieve the reference point from the neuron
     ref_point = neuron.nodes.loc[neuron.nodes['node_id'] == node_id, ['x', 'y', 'z']].values
@@ -87,8 +86,6 @@ def closest_points(neuron, node_id, rank=1):
 
     # Return the reference point, closest points, and their corresponding node IDs up to the given rank
     return np.array(closest_ranked_points), closest_ranked_node_ids
-
-
 
 
 def calculate_vector(coords):
@@ -129,12 +126,11 @@ def calculate_feature(ns, end_node_ids, num_nodes=(5, 50), dis_end=0):
                 
             if i==1 and end_node_id == nodes[-1]:
                 neighbor_loc_arr = np.flip(neighbor_loc_arr, axis=0)
-            
+                
             vec = calculate_vector(neighbor_loc_arr)
             cf.append(np.dot(vec, cvect))
             
     return np.array([cvect_norm] + cf)
-
 
 def collinearity(ns, end_node_ids, num_nodes=(4, 49)):
     end_coords = np.vstack([n.nodes[n.nodes.node_id == end_node_id][["x", "y", "z"]].to_numpy() for n, end_node_id in zip(ns, end_node_ids)])
@@ -150,9 +146,32 @@ def collinearity(ns, end_node_ids, num_nodes=(4, 49)):
             vec = calculate_vector(neighbor_loc_arr)
             cf.append(np.dot(-vec, cvect))
     return cf
+    
+    
+def end_nodes(skel):
+    max_distance = 0
+    furthest_node_ids = (None, None)
+    
+    root_node = skel.root.tolist()[0]
+    if isinstance(root_node, int):
+        root_node = [root_node]
+    root_pts = skel.nodes[skel.nodes['node_id'] == root_node[0]][['x','y','z']].values.tolist()
+    end_nodes = list(skel.ends['node_id'])
+    end_pts = skel.ends[['x','y','z']].values.tolist()
+
+    node_ids = root_node+end_nodes
+    points = root_pts+end_pts
+
+    for i in range(len(points)):
+        for j in range(i + 1, len(points)):
+            dist = math.sqrt(sum((points[i][k] - points[j][k]) ** 2 for k in range(3)))
+            if dist > max_distance:
+                max_distance = dist
+                furthest_node_ids = (node_ids[i], node_ids[j])
+    return furthest_node_ids
 
 
-def find_pairs(neuro_list, query_dis=15, min_collin = 0.1, sc = None, cl = None, bound_box=None, min_nodes=None, dis_end=0):
+def find_pairs(neuro_list, query_dis=15, sc = None, cl = None, bound_box=None, min_nodes=None, dis_end=0):
     np.seterr(invalid='ignore')
     #filter if minimum nodes is provided
     if min_nodes:
@@ -162,17 +181,14 @@ def find_pairs(neuro_list, query_dis=15, min_collin = 0.1, sc = None, cl = None,
     if bound_box:
       neuro_list = filter_skeletons(neuro_list,bound_box)
       
-    #sort to ensure nodes are in end-to-root order  
-    neuro_list = sort_neurons(neuro_list)
-    
     #find end and root nodes
     pts = pd.DataFrame(None)
     for sk in neuro_list:
         if len(sk.branch_points) == 0:
-            ends = sk.nodes.iloc[[0, -1]].copy()
+            e_nodes = end_nodes(sk)
+            ends = sk.nodes[sk.nodes['node_id'].isin(e_nodes)].copy()
             ends['neuron']=sk.id
             pts = pd.concat([pts, ends])
-    pts = pts[pts['type'].isin(['root','end'])]
     ids = dict(zip([i.id for i in neuro_list], list(range(0,len(neuro_list)))))
     
     endpts = np.array(pts[['x','y','z']])
@@ -205,8 +221,8 @@ def find_pairs(neuro_list, query_dis=15, min_collin = 0.1, sc = None, cl = None,
             cf = tuple(calculate_feature(candidate_neurons, candidate_end_node_ids, dis_end=dis_end))
             subfeat[str(candidate_neurons.id)] = cf
             
-        #skip pair if collinearity too low
-        if len(np.where(np.array(cf[1:5]) < min_collin)[0]) > 0:
+        #skip pair if collinearity negative
+        if len(np.where(np.array(cf[1:5]) < 0)[0]) > 0:
             continue
         
         f += cf
@@ -225,7 +241,6 @@ def find_pairs(neuro_list, query_dis=15, min_collin = 0.1, sc = None, cl = None,
             (p_end_node_id, end_node_id)
             for end_node_id in endpts_node_id[p_knn_idxs]
         ]
-        
         
         for nn_neurons, nn_end_node_ids  in zip(p_knn_neurons, p_knn_end_node_ids):
             try:
@@ -303,12 +318,12 @@ def merge_pairs(neuro_list, pair_data, thresh = None, min_collin = None):
     cc = list(nx.connected_components(G))
     
     for com in cc:
-        merge_num += len(com)-1
         group = []
         for neu in com:
             group.append(neuro_list[neuro_list.id == neu])
         new_neu = navis.stitch_skeletons(group, method='LEAFS')
         if len(new_neu.branch_points) == 0:
+            merge_num += len(com)-1
             for neu in group:
                 id_remap[neu.id[0]]=new_neu.id
                 neuro_list = neuro_list[(neuro_list.id != neu.id)]

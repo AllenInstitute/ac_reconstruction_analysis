@@ -141,7 +141,7 @@ def postprocess_strip(out_dir, file, cl, sc, bound_boxs=None, trans=[0,0,0], min
     write_navis_skels_tar(out_dir+fname, skels)
     
     
-def connect_two_strips(strip1, strip2, overlap, cl=None, sc=None, edge_prop=.9, min_nodes=0, query_dis=10, min_collin=0.7, prob_thresh=0.1, dis_end=2, replace_file=True):
+def connect_two_strips(strip1, strip2, overlap, cl=None, sc=None, edge_prop=.9, min_nodes=0, query_dis=10, min_collin=None, prob_thresh=0.1, dis_end=0, replace_file=True):
     if isinstance(strip1, navis.core.neuronlist.NeuronList):
         s1,s2 = strip1,strip2
         strip1,strip2 = 'strip1','strip2'
@@ -167,7 +167,7 @@ def connect_two_strips(strip1, strip2, overlap, cl=None, sc=None, edge_prop=.9, 
 
     try:
         #run reconnection
-        non_merged, merged = reconnect(skels=skels, cl=cl, sc=sc, min_nodes=min_nodes, query_dis=query_dis, min_collin=min_collin, 
+        non_merged, merged, id_remap = reconnect(skels=skels, cl=cl, sc=sc, min_nodes=min_nodes, query_dis=query_dis, min_collin=min_collin, 
                                        prob_thresh=prob_thresh, downsample=None, smooth=None, split=False, bound_box=bound_box, dis_end=dis_end)
         merged.set_neuron_attributes(['merged']*int(len(merged)), 'strip')
     
