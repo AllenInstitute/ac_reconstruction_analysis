@@ -292,7 +292,7 @@ def merge_pairs(neuro_list, pair_data, thresh = None, min_collin = None):
     merge_list = []
     id_remap = {}
     if min_collin:
-        pair_data = [x for x in pair_data if ((len(np.where(x[1][2:6] < min_collin)[0])==0))]                   
+        pair_data = [x for x in pair_data if ((len(np.where(x[1][2:6] < min_collin)[0])==0))]
     if thresh:
         pair_data = [x for x in pair_data if (x[1][0] > thresh)]
         pair_data  = pd.DataFrame([list(i[0]) + list(i[1]) for i in pair_data])
@@ -317,24 +317,31 @@ def merge_pairs(neuro_list, pair_data, thresh = None, min_collin = None):
     G.add_edges_from(pairs)
     cc = list(nx.connected_components(G))
     
-    for com in cc:
+    neuro_ids = neuro_list.id
+    remove = [] 
+    for ind,com in enumerate(cc):
+        #print(ind)
         group = []
+        rem_ind = []
         for neu in com:
-            group.append(neuro_list[neuro_list.id == neu])
+            s_ind = np.where(neuro_ids == neu)
+            rem_ind += [s_ind[0].astype(int)]
+            group.append(neuro_list[s_ind])
         new_neu = navis.stitch_skeletons(group, method='LEAFS')
         if len(new_neu.branch_points) == 0:
             merge_num += len(com)-1
+            remove += rem_ind
             for neu in group:
-                id_remap[neu.id[0]]=new_neu.id
-                neuro_list = neuro_list[(neuro_list.id != neu.id)]
-                
+                id_remap[neu.id[0]]=new_neu.id     
             #append to merge list
             merge_list.append(new_neu)  
 
     #reset soma to none
-    for neu in neuro_list:
+    neuro_list = navis.NeuronList([x for ind,x in enumerate(neuro_list) if ind not in remove])
+    
+    for ind,neu in enumerate(neuro_list):
         neu.soma = None
-
+    
     id_remap = {key: value for key, value in id_remap.items() if key != value}
     print('Pairs Merged: ', merge_num)
     return neuro_list, navis.NeuronList(merge_list), id_remap
