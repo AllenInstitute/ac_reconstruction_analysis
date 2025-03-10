@@ -587,10 +587,10 @@ def apply_transform_skeletons(skels, transform=[[1,0,0],[0,1,0],[0,0,1]]):
     out_skels['soma'] = None
     return out_skels
 
-def remove_cutout_nodes(skels, bound_box=[0,0,0,0,0,0]):
+def remove_cutout_nodes(skels, bound_box=[0,0,0,0,0,0], min_nodes=5):
     out_sk = navis.NeuronList(None)
     x1,x2,y1,y2,z1,z2 = bound_box
-    for sk in skels:
+    for ind,sk in enumerate(skels):
         #find nodes within bounding box
         nodes = sk.nodes.copy()
         drop_nodes = list(nodes[nodes['x'].between(x1,x2) & nodes['y'].between(y1,y2) & nodes['z'].between(z1,z2)]['node_id'])
@@ -601,13 +601,18 @@ def remove_cutout_nodes(skels, bound_box=[0,0,0,0,0,0]):
             nodes = nodes[~nodes['node_id'].isin(drop_nodes)].copy()
             if len(nodes) <= 1:
                 continue
-
             nsk = navis.NeuronList(nodes.copy())  
             frag = navis.break_fragments(nsk)
-            for fr in frag:
-                if len(fr.nodes) > 1:
-                    fr.id = str(uuid.uuid4())
-                    out_sk.append(fr)
+            if len(frag) > 1 :
+                for ind,fr in enumerate(frag):
+                    if ind != 0:
+                        if len(fr.nodes) > min_nodes:
+                            fr.id = str(uuid.uuid4())
+                            out_sk.append(fr)
+                    else:
+                        out_sk.append(fr)
+            else:
+                out_sk.append(frag)
         else:
             out_sk.append(sk)
     return out_sk
