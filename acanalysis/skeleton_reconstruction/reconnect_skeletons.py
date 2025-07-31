@@ -44,25 +44,24 @@ def reconnect(skels, out_file = None, cl=None, sc=None, min_nodes=10, downsample
       # Split branches 
       skels = util.swc_split_branches(skels, min_nodes=min_nodes)
     
-    # Upsample skeletons
+    # Downsample skeletons
     if downsample:
       skels = navis.downsample_neuron(skels, downsampling_factor=downsample, parallel=True, progress=False)
 
     # Find pairs
-    pair_data_iter = util.find_pairs(neuro_list=skels, sc=sc, cl=cl, query_dis=query_dis, min_collin=min_collin, bound_box=bound_box, dis_end=dis_end)
+    pair_data_iter = util.find_pairs(neuro_list=skels, sc=sc, cl=cl, query_dis=query_dis, bound_box=bound_box, dis_end=dis_end)
 
     try:
       # Merge segment pairs with prob above thresh
-      unmerged, merged = util.merge_pairs(skels, pair_data_iter, prob_thresh)
+      unmerged, merged, id_remap = util.merge_pairs(skels, pair_data_iter, prob_thresh, min_collin)
     except:
-      unmerged, merged = skels, navis.NeuronList(None)              
+      unmerged, merged, id_remap = skels, navis.NeuronList(None), None              
       
     if out_file:
       util.write_navis_skels_tar(out_file, navis.NeuronList([unmerged,merged]), mode='w:gz')
     else:
-      return unmerged, merged
-            
-
+      return unmerged, merged, id_remap
+      
     
             
 class Reconnect(ags.ArgSchemaParser):
