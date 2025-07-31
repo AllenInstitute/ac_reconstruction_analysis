@@ -47,6 +47,7 @@ numpy = "1.22.0"
 scalene = "*"
 
 [tool.pixi.environments]
+default = ["py310"]
 py38-conda-scalene = [ "py38", "scalene"]
 py39-conda-scalene = ["py39", "scalene"]
 py310-conda-scalene = ["py310", "scalene"]
