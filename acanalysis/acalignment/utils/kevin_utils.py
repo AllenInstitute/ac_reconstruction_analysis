@@ -100,7 +100,6 @@ def gkp_inputs_from_alignjs_old(alignjs,
 
 
 def gkp_inputs_from_alignjs(alignjs,
-                            is_tar=False,
                             swap_xyz=None,
                             mincablelength=None,
                             minradius=None,
@@ -119,7 +118,6 @@ def gkp_inputs_from_alignjs(alignjs,
         roi_coords = None # no roi means use all skeletons in swc
         if "swc_kwargs" in s:
             swckwargs = s.get("swc_kwargs")
-            is_tar = swckwargs.get("is_tar")
         else:
             swckwargs = None
         for i,tid in enumerate(s.get("tiles")):

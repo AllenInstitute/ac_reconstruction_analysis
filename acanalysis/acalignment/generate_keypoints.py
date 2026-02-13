@@ -72,9 +72,10 @@ def keypoint_from_neuron(neuron,name='',ori=None,swcmip=0):
 
 
 
-def filter_skeletons(neurons,names=None,ids=None,mincablelength=None,minradius=None,**kwargs):
+def filter_skeletons(skels,names=None,ids=None,mincablelength=None,minradius=None,swap_xyz=None,**kwargs):
     filtered = []
-    for n in neurons:
+    for skel in skels:
+        n = navis.TreeNeuron(skel.to_swc())
         good = True
         if not names is None:
             good = n.name in names
@@ -85,6 +86,8 @@ def filter_skeletons(neurons,names=None,ids=None,mincablelength=None,minradius=N
         if not minradius is None:
             good = n.nodes.radius.mean() >= minradius
         if good:
+            if not swap_xyz is None and swap_xyz:
+                n.nodes[["x","y","z"]] = n.nodes[swap_xyz]
             filtered.append(n)
     if filtered:
         return navis.NeuronList(filtered)
@@ -248,6 +251,7 @@ def generate_keypoint_file(indir,
     print(f"reading from {indir}")
     bb = (z_range[0],y_range[0],x_range[0],z_range[1],y_range[1],x_range[1])
     skels, shards = query_skeletons_by_bb(bb, indir, n_workers=15)
+    print(f"{len(skels)} in bb")
     neurons = filter_skeletons(skels,**kwargs)
     print(f"{neurons.shape[0]} filtered")
     keypts = [keypoint_from_neuron(neuron,name=tile_name+str(neuron.id),ori=ori,swcmip=swcmip) for neuron in neurons]
