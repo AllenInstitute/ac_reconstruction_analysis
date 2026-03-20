@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import argschema as ags
 import navis
-import acanalysis.skeleton_reconstruction.util as util
+import acanalysis.skeleton_reconstruction.util as utils
 from joblib import dump, load
 
 
