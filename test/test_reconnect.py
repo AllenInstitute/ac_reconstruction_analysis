@@ -1,10 +1,10 @@
 import navis
 import os
-import acanalysis.skeleton_reconstruction.reconnect_skeletons as rec
+import acanalysis.skeleton_reconstruction.reconnect_skeletons_navis as rec
 
 
 def test_reconnect():
     path=os.path.dirname(os.path.realpath(__file__))
-    skels = navis.example_neurons(n=2, kind='skeleton')
-    nm,m = rec.reconnect(skels, cl=path+'/model/LR_1.joblib', sc=path+'/model/scaler.joblib')
-    nm,m = rec.reconnect(skels, cl=None, sc=None)
+    skels = navis.example_neurons(n=10, kind='skeleton')
+    nm,m,ids = rec.reconnect(skels, cl=path+'/model/LR_1.joblib', sc=path+'/model/scaler.joblib')
+    nm,m,ids = rec.reconnect(skels, cl=None, sc=None)

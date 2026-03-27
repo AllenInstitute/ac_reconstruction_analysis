@@ -28,8 +28,8 @@ import networkx as nx
 
 
 from acanalysis.skeleton_reconstruction.utils import write_cv_skels_tar, read_cv_neurons_tar
-from h5_skeletons import *
-from h5_reconnect import *
+from acanalysis.skeleton_reconstruction.h5.h5_skeletons import *
+from acanalysis.skeleton_reconstruction.h5.h5_reconnect import *
 
 
 

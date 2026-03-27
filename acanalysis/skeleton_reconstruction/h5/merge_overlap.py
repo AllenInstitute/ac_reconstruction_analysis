@@ -5,8 +5,8 @@ import os
 from cloudvolume import Skeleton
 from scipy.spatial import cKDTree
 
-from h5_skeletons import *
-from h5_reconnect import *
+from acanalysis.skeleton_reconstruction.h5.h5_skeletons import *
+from acanalysis.skeleton_reconstruction.h5.h5_reconnect import *
 
 
 def find_merged_neurons(unmerged, merged):

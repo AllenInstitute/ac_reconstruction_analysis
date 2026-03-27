@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import argschema as ags
 import navis
-import acanalysis.skeleton_reconstruction.util as utils
+import acanalysis.skeleton_reconstruction.utils as utils
 from joblib import dump, load
 
 
@@ -28,7 +28,7 @@ def reconnect(skels, out_file = None, cl=None, sc=None, min_nodes=10, downsample
       pass
     else:
       if skels.endswith('.gz'):
-        skels = util.read_navis_neurons_tar(skels)
+        skels = utils.read_navis_neurons_tar(skels)
       elif skels.endswith('.swc'):
         skels = navis.read_swc(skels)
         
@@ -42,23 +42,23 @@ def reconnect(skels, out_file = None, cl=None, sc=None, min_nodes=10, downsample
     
     if split==True:
       # Split branches 
-      skels = util.swc_split_branches(skels, min_nodes=min_nodes)
+      skels = utils.swc_split_branches(skels, min_nodes=min_nodes)
     
     # Downsample skeletons
     if downsample:
       skels = navis.downsample_neuron(skels, downsampling_factor=downsample, parallel=True, progress=False)
 
     # Find pairs
-    pair_data_iter = util.find_pairs(neuro_list=skels, sc=sc, cl=cl, query_dis=query_dis, bound_box=bound_box, dis_end=dis_end)
+    pair_data_iter = utils.find_pairs(neuro_list=skels, sc=sc, cl=cl, query_dis=query_dis, bound_box=bound_box, dis_end=dis_end)
 
     try:
       # Merge segment pairs with prob above thresh
-      unmerged, merged, id_remap = util.merge_pairs(skels, pair_data_iter, prob_thresh, min_collin)
+      unmerged, merged, id_remap = utils.merge_pairs(skels, pair_data_iter, prob_thresh, min_collin)
     except:
       unmerged, merged, id_remap = skels, navis.NeuronList(None), None              
       
     if out_file:
-      util.write_navis_skels_tar(out_file, navis.NeuronList([unmerged,merged]), mode='w:gz')
+      utils.write_navis_skels_tar(out_file, navis.NeuronList([unmerged,merged]), mode='w:gz')
     else:
       return unmerged, merged, id_remap
       

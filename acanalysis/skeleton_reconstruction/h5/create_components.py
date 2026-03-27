@@ -26,8 +26,8 @@ import math
 import glob
 import networkx as nx
 
-from h5_skeletons import *
-from h5_reconnect import *
+from acanalysis.skeleton_reconstruction.h5.h5_skeletons import *
+from acanalysis.skeleton_reconstruction.h5.h5_reconnect import *
 
     
     
