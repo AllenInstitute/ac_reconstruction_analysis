@@ -210,7 +210,6 @@ def merge_pairs(neuro_list, pair_data,  prob_thresh = None, min_collin = None):
         # skip if either neuron-node was already used
         if (id1, node1) in used_nodes or (id2, node2) in used_nodes:
             continue
-
         # retrieve neurons
         m1 = neuro_list[neuro_ids[id1]]
         m2 = neuro_list[neuro_ids[id2]]
@@ -234,6 +233,7 @@ def merge_pairs(neuro_list, pair_data,  prob_thresh = None, min_collin = None):
         merge_ids_single.append(id1)
         merge_num += 1
 
+
     for sk in neuro_list:
         if sk.id not in merge_ids_single:
             unmerge_list.append(sk)
@@ -241,8 +241,6 @@ def merge_pairs(neuro_list, pair_data,  prob_thresh = None, min_collin = None):
     merge_list = Skeleton.simple_merge(merge_list).consolidate().components()
     merge_list, unused_ids = find_skel_ids(og_list, merge_list)
     
-    for sk in merge_list:
-        print(sk.id)
 
     print(f"Pairs merged: {merge_num}")
     return merge_list, unmerge_list, merge_ids_pairs

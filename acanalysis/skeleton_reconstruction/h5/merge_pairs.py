@@ -45,8 +45,7 @@ class CloudOptions(argschema.schemas.DefaultSchema):
 
 class MergePairsParameters(argschema.ArgSchema):
     skels = argschema.fields.String(required=True)
-    pair_files = argschema.fields.String(required=False, dump_default=None)
-    component_index = argschema.fields.String(required=True, dump_default=None)
+    pair_file = argschema.fields.String(required=False, dump_default=None)
     prob_thresh = argschema.fields.Float(required=True, dump_default=.1)
     method = argschema.fields.String(required=False, dump_default='dist', metadata={'description': 'Which pair type to merge: "dist" or "model"'})
     n_workers = argschema.fields.Int(required=False, dump_default=10)
@@ -75,13 +74,25 @@ class MergePairsModule(argschema.ArgSchemaParser):
         if method not in ('dist', 'model'):
             raise ValueError(f"method must be 'dist' or 'model', got '{method}'")
 
-        data = np.load(os.path.join(self.args["pair_files"], f"{method}_consolidated.npy"), allow_pickle=True)
-        components = np.load(os.path.join(self.args["pair_files"], f"{method}_components.npy"), allow_pickle=True)
-        components = [list(x.tolist()) for x in components]
-
-        if self.args["component_index"]:
-            i1, i2 = [int(x) for x in self.args["component_index"].split() if x.isdigit()]
-            components = components[i1:i2]
+        pair_file_arg = self.args["pair_file"]
+        if os.path.isdir(pair_file_arg):
+            pattern = os.path.join(pair_file_arg, f"{method}_consolidated*.npy")
+            pair_files = sorted(glob.glob(pattern))
+            if not pair_files:
+                raise FileNotFoundError(f"No {method}_consolidated*.npy files found in {pair_file_arg}")
+            print(f"Found {len(pair_files)} pair file(s)")
+        else:
+            pair_files = [pair_file_arg]
+        
+        all_pairs = []
+        all_components = []
+        for pf in pair_files:
+            combined = np.load(pf, allow_pickle=True).item()
+            all_pairs.append(combined["pairs"])
+            all_components.extend([list(x.tolist()) for x in combined["components"]])
+        
+        data = np.concatenate(all_pairs) if len(all_pairs) > 1 else all_pairs[0]
+        components = all_components
 
         skel_ids = {item for sublist in components for item in sublist}
         data = [item for item in data if int(item[0]) in skel_ids and int(item[2]) in skel_ids]
@@ -107,20 +118,19 @@ class MergePairsModule(argschema.ArgSchemaParser):
         #write swc
         if 'swc' in self.args['skels']:
             current_path = Path(self.args['skels'])
-            out_path = os.path.join(str(current_path.parent), "out_skels.swcs.tar.gz")
+            out_path = os.path.join(str(current_path.parent), "merged_skels.swcs.tar.gz")
             write_cv_skels_tar(out_path, skels, mode='w:gz')
 
         #write h5 
         else:
-            out_path = os.path.join(self.args["skels"], f"skeleton_shards_{method}")  
+            delete_skeletons_parallel(self.args["skels"], skel_ids, n_workers=self.args['n_workers'])
             out_skels_dic = {i.id: i for i in skels}
             global_index = shard_and_write_skeletons(
                 out_skels_dic,
-                out_path,
+                self.args["skels"],
                 max_skeletons_per_shard=10000,
-                n_workers=10
-            )
-        
+                n_workers=self.args['n_workers'])
+                  
         
              
         
@@ -136,8 +146,6 @@ __all__ = [
 ]
 
 
- 
-    
  
     
             

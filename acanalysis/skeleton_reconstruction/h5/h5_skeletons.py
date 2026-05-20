@@ -4,7 +4,7 @@ import io
 import glob
 from io import BytesIO
 import h5py
-from uuid import uuid4
+import uuid
 import random
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from tqdm import tqdm
@@ -33,7 +33,7 @@ def write_single_shard(shard_skeleton_items, output_dir):
     Automatically handles small shards by capping chunk sizes.
     """
     shard_dict = dict(shard_skeleton_items)
-    shard_id = random.randint(10**13, 10**14 - 1)
+    shard_id = int(uuid.uuid4().int % 1e14)  
     shard_name = f"{shard_id:03d}.h5"
     shard_path = os.path.join(output_dir, shard_name)
 

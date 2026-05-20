@@ -61,7 +61,8 @@ class CloudOptions(argschema.schemas.DefaultSchema):
 
 class CreateComponentsParameters(argschema.ArgSchema):
     pair_files = argschema.fields.String(required=False, dump_default=None, metadata={'description': 'Output file for CreateComponentsed skeletons'})
-    method = argschema.fields.String(required=False, dump_default='dist', metadata={'description': 'Which pair type to process: "dist" or "model"'}) 
+    method = argschema.fields.String(required=False, dump_default='dist', metadata={'description': 'Which pair type to process: "dist" or "model"'})
+    components_per_file = argschema.fields.Int(required=False, dump_default=5000, allow_none=True, metadata={'description': 'If set, split output into multiple files with this many components each. If None, writes a single file (original behavior).'})
 
     
 class CreateComponentsModule(argschema.ArgSchemaParser):
@@ -142,8 +143,42 @@ class CreateComponentsModule(argschema.ArgSchemaParser):
 
         data = np.array([tuple(row) for row in data], dtype=dtype)
 
-        np.save(os.path.join(self.args["pair_files"], "{0}_consolidated.npy".format(method)), data)
-        np.save(os.path.join(self.args["pair_files"], "{0}_components.npy".format(method)), out_components)
+        components_per_file = self.args.get('components_per_file')
+
+        if components_per_file is None:
+            np.save(os.path.join(self.args["pair_files"], f"{method}_consolidated.npy"), {"pairs": data, "components": out_components})
+        else:
+            # Split components into chunks and write one file per chunk.
+            # For each chunk, also filter the pair data to only include edges
+            # whose nodes appear in that chunk's components.
+            n_chunks = math.ceil(len(out_components) / components_per_file)
+            print(f"Writing {n_chunks} file(s) ({components_per_file} components per file)")
+
+            for chunk_idx in range(n_chunks):
+                chunk_components = out_components[
+                    chunk_idx * components_per_file : (chunk_idx + 1) * components_per_file
+                ]
+
+                # Build the set of nodes that belong to this chunk
+                chunk_nodes = set()
+                for arr in chunk_components:
+                    chunk_nodes.update(arr.tolist())
+
+                # Filter consolidated pair data to this chunk's nodes
+                chunk_data = data[
+                    np.isin(data['id1'], list(chunk_nodes)) &
+                    np.isin(data['id2'], list(chunk_nodes))
+                ]
+
+                chunk_components_arr = np.array(chunk_components, dtype=object)   
+                
+                consolidated_path = os.path.join(
+                    self.args["pair_files"],
+                    "{0}_consolidated_{1:04d}.npy".format(method, chunk_idx)
+                )        
+                np.save(consolidated_path, {"pairs": chunk_data, "components": chunk_components_arr})
+
+                print(f"  Chunk {chunk_idx:04d}: {len(chunk_components)} components, {len(chunk_data)} pairs")
         
         
 
@@ -156,10 +191,7 @@ __all__ = [
     "CreateComponentsModule",
     "CreateComponentsParameters"
 ]
-
-
- 
-    
+       
  
     
             
