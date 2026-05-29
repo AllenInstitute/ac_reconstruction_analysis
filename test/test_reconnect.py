@@ -1,6 +1,6 @@
 import navis
 import os
-import acanalysis.skeleton_reconstruction.reconnect_skeletons as rec
+import acanalysis.skeleton_reconstruction.reconnection.reconnect_navis as rec
 
 
 def test_reconnect():

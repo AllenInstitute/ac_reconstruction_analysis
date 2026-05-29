@@ -49,28 +49,6 @@ def longest_path_in_tree(G_sub):
     
     
 def create_components(raw_data, method='dist', components_per_file=5000, output_dir=None):
-    """
-    Build connected components from raw pair data, prune large/branching components,
-    and optionally save chunked output files.
-
-    Parameters
-    ----------
-    raw_data : list
-        List of pair records loaded from .npy pair files.
-    method : str
-        'dist' or 'model' — controls deduplication threshold.
-    components_per_file : int or None
-        If set, split output into chunks of this size. If None, returns a single consolidated result.
-    output_dir : str or Path or None
-        If provided, saves .npy files here. If None, skips file I/O and just returns the data.
-
-    Returns
-    -------
-    out_components : list of np.ndarray
-        Each array contains the node IDs of one connected component.
-    data : np.ndarray
-        Structured array of filtered pairs with fields (id1, count1, id2, count2, score).
-    """
     threshold = None if method == 'dist' else 0.3
     data = deduplicate(raw_data, threshold=threshold)
 

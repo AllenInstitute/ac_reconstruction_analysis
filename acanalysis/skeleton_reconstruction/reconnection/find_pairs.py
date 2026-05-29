@@ -132,19 +132,20 @@ class FindPairsModule(argschema.ArgSchemaParser):
 
         print("# of Skels: ", len(skels))             
         
-        if method == 'model':
-            if not self.args['sc'] or not self.args['cl']:
-                raise ValueError("'sc' and 'cl' are required when method is 'model'")
-            sc = load(self.args['sc'])
-            cl = load(self.args['cl'])
-            pairs = find_pairs(skels, query_dis=self.args['query_dis'], min_collin=self.args['min_collin'], sc=sc, cl=cl, batch_size=1000, min_nodes=self.args['min_nodes'])     
-            print('Total Model Pairs: ', len(pairs))
-            np.save(os.path.join(out_dir, "{0}_model_pairs.npy".format(str(self.args['cutout']))), pairs)
-
-        elif method == 'dist':
-            pairs = find_pairs(skels, query_dis=self.args['query_dis'], min_collin=self.args['min_collin'], min_nodes=self.args['min_nodes'])        
-            print('Total Distance Pairs: ', len(pairs))
-            np.save(os.path.join(out_dir, "{0}_dist_pairs.npy".format(str(self.args['cutout']))), pairs)
+        if len(skels)>0:
+            if method == 'model':
+                if not self.args['sc'] or not self.args['cl']:
+                    raise ValueError("'sc' and 'cl' are required when method is 'model'")
+                sc = load(self.args['sc'])
+                cl = load(self.args['cl'])
+                pairs = find_pairs(skels, query_dis=self.args['query_dis'], min_collin=self.args['min_collin'], sc=sc, cl=cl, batch_size=1000, min_nodes=self.args['min_nodes'])     
+                print('Total Model Pairs: ', len(pairs))
+                np.save(os.path.join(out_dir, "{0}_model_pairs.npy".format(str(self.args['cutout']))), pairs)
+    
+            elif method == 'dist':
+                pairs = find_pairs(skels, query_dis=self.args['query_dis'], min_collin=self.args['min_collin'], min_nodes=self.args['min_nodes'])        
+                print('Total Distance Pairs: ', len(pairs))
+                np.save(os.path.join(out_dir, "{0}_dist_pairs.npy".format(str(self.args['cutout']))), pairs)
        
 
 if __name__ == "__main__":
