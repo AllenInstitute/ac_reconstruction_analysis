@@ -9,7 +9,7 @@ import requests
 import tifffile
 import navis
 import shutil
-from acanalysis.skeleton_reconstruction.utils import read_navis_neurons_tar, write_navis_skels_tar, swap_dimensions
+from acanalysis.skeleton_reconstruction.reconnection.utils import read_navis_neurons_tar, write_navis_skels_tar, swap_dimensions
 from joblib import Parallel, delayed, parallel_config
 import uuid
 from natsort import natsorted

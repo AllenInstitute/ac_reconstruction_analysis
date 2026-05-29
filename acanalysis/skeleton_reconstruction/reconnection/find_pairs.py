@@ -24,9 +24,9 @@ import copy
 import colorsys
 import math
 
-from acanalysis.skeleton_reconstruction.utils import write_cv_skels_tar, read_cv_neurons_tar
-from acanalysis.skeleton_reconstruction.h5.h5_skeletons import *
-from acanalysis.skeleton_reconstruction.h5.h5_reconnect import *
+from acanalysis.skeleton_reconstruction.reconnection.utils import write_cv_skels_tar, read_cv_neurons_tar
+from acanalysis.skeleton_reconstruction.reconnection.h5_skeletons import *
+from acanalysis.skeleton_reconstruction.reconnection.h5_reconnect import *
 
 
 import json
@@ -82,13 +82,13 @@ class CloudOptions(argschema.schemas.DefaultSchema):
 class FindPairsParameters(argschema.ArgSchema):
     skels = argschema.fields.String(required=True, metadata = {'description': 'Input skeletons, as navis objects, swc, or swc.gz'})
     out_file = argschema.fields.String(required=False, dump_default=None, metadata = {'description': 'Output file for FindPairsed skeletons'})
-    cl = argschema.fields.InputFile(required=False, dump_default=None, allow_none=True,metadata = {'description': 'Model File'})
-    sc = argschema.fields.InputFile(required=False, dump_default=None, allow_none=True, metadata = {'description': 'Scalar File'})    
+    cl = argschema.fields.String(required=False, dump_default=None, allow_none=True,metadata = {'description': 'Model File'})
+    sc = argschema.fields.String(required=False, dump_default=None, allow_none=True, metadata = {'description': 'Scalar File'})    
     min_nodes = argschema.fields.Int(required=False, dump_default=10, description='Minimum skeleton node length')
     query_dis = argschema.fields.Int(required=False, dump_default=20, description='Maximum query distance for matching end nodes')
     min_collin = argschema.fields.Float(required=False, dump_default=.8, description='Minimum collinearity for finding skeleton merge pairs')
     cutout = argschema.fields.String(required=False, allow_none=True, dump_default=None)
-    method = argschema.fields.String(required=False, dump_default='distance', metadata={'description': 'Pair-finding method: "model" or "distance"'})
+    method = argschema.fields.String(required=False, dump_default='dist', metadata={'description': 'Pair-finding method: "model" or "dist"'})
     n_workers = argschema.fields.Int(required=False, dump_default=10)
     
 class FindPairsModule(argschema.ArgSchemaParser):
@@ -114,8 +114,8 @@ class FindPairsModule(argschema.ArgSchemaParser):
         os.makedirs(out_dir, exist_ok=True)
         
         method = self.args['method']
-        if method not in ('model', 'distance'):
-            raise ValueError(f"method must be 'model' or 'distance', got '{method}'")
+        if method not in ('model', 'dist'):
+            raise ValueError(f"method must be 'model' or 'dist', got '{method}'")
             
             
         if 'swc' in self.args['skels']:
@@ -141,7 +141,7 @@ class FindPairsModule(argschema.ArgSchemaParser):
             print('Total Model Pairs: ', len(pairs))
             np.save(os.path.join(out_dir, "{0}_model_pairs.npy".format(str(self.args['cutout']))), pairs)
 
-        elif method == 'distance':
+        elif method == 'dist':
             pairs = find_pairs(skels, query_dis=self.args['query_dis'], min_collin=self.args['min_collin'], min_nodes=self.args['min_nodes'])        
             print('Total Distance Pairs: ', len(pairs))
             np.save(os.path.join(out_dir, "{0}_dist_pairs.npy".format(str(self.args['cutout']))), pairs)

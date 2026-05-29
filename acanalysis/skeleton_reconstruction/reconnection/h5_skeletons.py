@@ -1,4 +1,6 @@
 import os
+os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
+
 import numpy as np
 import io
 import glob
@@ -14,6 +16,26 @@ import navis
 import numpy as np
 import glob
 import navis
+import time
+
+
+def create_random_skeleton(segid, n_vertices=10, space_shape=(100, 100, 100)):
+    vertices = np.random.rand(n_vertices, 3) * np.array(space_shape)
+    
+    # Simple chain edges + random branches
+    edges = [[i, i+1] for i in range(n_vertices - 1)]
+    
+    skel = Skeleton(
+        vertices=vertices,
+        edges=edges,
+        radii=np.random.uniform(0.5, 2.0, size=n_vertices).astype(np.float32),
+        vertex_types=np.zeros(n_vertices, dtype=np.uint8),
+        segid=segid
+    )
+    return skel
+
+# Generate a bunch
+skeletons = {i: create_random_skeleton(i) for i in range(100)}
 
 
 
@@ -489,21 +511,26 @@ def _read_matching_ids_from_shard(args):
         return shard_name, skels
 
 
-def delete_skeletons_in_shard(shard_path, skeleton_ids_set):
-    with h5py.File(shard_path, "r+") as f:
-        # FIX: read from int64 segids dataset, not float32 index[:,0]
-        segids_ds = f["segids"]
-        segid_col = segids_ds[:]  # int64 numpy array
+def delete_skeletons_in_shard(shard_path, skeleton_ids_set, retries=8, base_delay=0.25):
+    for attempt in range(retries):
+        try:
+            with h5py.File(shard_path, "r+") as f:
+                segids_ds = f["segids"]
+                segid_col = segids_ds[:]
 
-        mask = np.isin(segid_col, list(skeleton_ids_set))
-        indices_to_delete = np.where(mask)[0]
+                mask = np.isin(segid_col, list(skeleton_ids_set))
+                indices_to_delete = np.where(mask)[0]
 
-        if len(indices_to_delete) == 0:
-            return None
+                if len(indices_to_delete) == 0:
+                    return None
 
-        # Mark as deleted in both datasets
-        segids_ds[indices_to_delete] = 0           # FIX: segids is now a numpy array/dataset
-        f["index"][indices_to_delete, 0] = 0       # also zero out index for consistency
+                segids_ds[indices_to_delete] = 0
+                f["index"][indices_to_delete, 0] = 0
+            return  # success
+        except BlockingIOError:
+            if attempt == retries - 1:
+                raise
+            time.sleep(base_delay * (2 ** attempt))  # exponential backoff
 
 
 def query_skeletons_by_id(segids, shard_dir, n_workers=1):
