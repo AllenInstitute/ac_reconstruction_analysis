@@ -10,4 +10,4 @@ mpyicbg
 zarr
 pathos
 natsort
-cloud-volume>=8.5.5
+cloud-volume>=11.0.0,<12.0.0

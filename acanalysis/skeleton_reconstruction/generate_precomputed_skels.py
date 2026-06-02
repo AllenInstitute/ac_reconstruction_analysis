@@ -4,7 +4,7 @@ from cloudvolume import CloudVolume, Skeleton
 import navis
 import uuid
 import argparse
-from acanalysis.skeleton_reconstruction.util import read_navis_neurons_tar
+from acanalysis.skeleton_reconstruction.reconnection.utils import read_navis_neurons_tar
 from acanalysis.skeleton_reconstruction.neuroglancer import generate_ngl_segmentation_empty
 
 def generate_precomputed_skeletons(skel_file, outdir, orient=False, match_fname=False, oid=0):
