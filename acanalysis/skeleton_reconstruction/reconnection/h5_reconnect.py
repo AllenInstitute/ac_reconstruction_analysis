@@ -216,6 +216,8 @@ def merge_pairs(neuro_list, pair_data,  prob_thresh = None, min_collin = None):
 
         merge_vertices[str(m1.vertices[0])] = id1
         merge_vertices[str(m2.vertices[0])] = id2 
+        
+        print(id1, node1, id2, node2, m1, m2)
 
         # --- identical merge logic ---
         end = m2.vertices[node2]

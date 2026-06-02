@@ -105,7 +105,7 @@ class MergePairsModule(argschema.ArgSchemaParser):
         #write h5 
         else:
             skels, shards = query_skeletons_by_id(skel_ids, self.args["skels"], n_workers=self.args['n_workers'])
-        
+                        
 
         if method == 'model':
             merged, non_merged, merge_ids = merge_pairs(skels, data, prob_thresh=self.args['prob_thresh'])
