@@ -60,7 +60,7 @@ def write_navis_skels_tar(tar_fn, skels, mode='w:gz', swcname=False):
                 sk.nodes.insert(1, 'label', list(np.zeros(len(sk.nodes))))
             sk = sk.nodes[['node_id', 'label','x','y','z','radius','parent_id']].values.tolist()
             sk = '\n'.join(str(x)[1:-1] for x in sk).replace(",", "")
-            bio = io.BytesIO(sk.encode())
+            bio = BytesIO(sk.encode())
             info = tarfile.TarInfo(name=f"{id}.swc")
             info.size = len(bio.getbuffer())
             t.addfile(tarinfo=info, fileobj=bio)
