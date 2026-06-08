@@ -2,6 +2,10 @@ numpy
 navis
 argschema
 scikit-image
+matplotlib
+pyvista
+fiberorient
+scipy
 render-python
 python-catmaid
 # pytest==6.2.5
