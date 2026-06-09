@@ -13,7 +13,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "acanalysis"
 version = "0.0.0"
+description = "analysis and alignment based on axonal skeletonizations"
+readme = "README.md"
+license = {file = "LICENSE"}
 authors = [
+    {name = "Connor Laughland"},
+    {name = "Kevin Takasaki"},
     {name = "Russel Torres"},
 ]
 description = "Axonal connectomics reconstruction analysis"
