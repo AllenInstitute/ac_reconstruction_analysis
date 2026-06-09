@@ -1,4 +1,8 @@
 # ac_reconstruction_analysis
+Analysis and alignment of axonal connectomics datasets based on skeletonized axonal reconstructions. 
+
+### Level of Support
+We are planning on occasional updating this tool with no fixed schedule. Community involvement is encouraged through both issues and pull requests. Please make pull requests against the develop branch, as we will test changes there before merging into main.
 
 # Alignment module
 ## Skeleton-based inter-sectional alignment
