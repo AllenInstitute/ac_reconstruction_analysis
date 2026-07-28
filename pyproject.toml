@@ -36,7 +36,6 @@ version_file = "acanalysis/_version.py"
 linux = "5.0.0"
 libc = "2.27"
 
-
 [tool.setuptools.packages.find]
 include = ["acanalysis*"]
 
