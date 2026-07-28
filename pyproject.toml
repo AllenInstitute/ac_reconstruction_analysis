@@ -7,12 +7,12 @@ requires = [
     "pytest",
     "pytest-cov",
     "pytest-mock",
+    "setuptools-scm"
 ]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "acanalysis"
-version = "0.0.0"
 description = "analysis and alignment based on axonal skeletonizations"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -21,11 +21,14 @@ authors = [
     {name = "Kevin Takasaki"},
     {name = "Russel Torres"},
 ]
-description = "Axonal connectomics reconstruction analysis"
-dynamic = ["dependencies"]
+# description = "Axonal connectomics reconstruction analysis"
+dynamic = ["dependencies", "version"]
 
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools_scm]
+version_file = "acanalysis/_version.py"
 
 [tool.setuptools.packages.find]
 include = ["acanalysis*"]
