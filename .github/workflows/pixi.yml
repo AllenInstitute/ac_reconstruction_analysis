@@ -17,7 +17,5 @@ jobs:
         # separated by spaces
         environments: >-
           default
-          # py39-conda-scalene
-          # py310-conda-scalene
     - run: |
         pixi run -e default pytest
