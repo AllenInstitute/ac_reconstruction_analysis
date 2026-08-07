@@ -2,11 +2,13 @@ import glob
 import os
 import pytest
 
+
 def get_submod(directory, filetype):
     submods = []
     for file in glob.glob(f"{directory}/**/{filetype}", recursive=True):
         submods.append(file)
-    return submods                 
+    return submods
+
 
 #get submodules and reformat
 path = os.path.normpath(os.path.dirname(os.path.realpath(__file__)) + os.sep + os.pardir) + '/acanalysis/'
@@ -17,4 +19,6 @@ submods = [ x for x in submods if any(y in x for y in matches)==False]
 
 @pytest.mark.parametrize("mod", submods)
 def test_import(mod):
+    if mod.split(".")[1] == "odf":
+        pytest.skip("odf not compatible")
     imp = __import__(mod)

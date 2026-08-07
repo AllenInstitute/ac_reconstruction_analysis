@@ -11,7 +11,7 @@ from scipy.interpolate import RegularGridInterpolator as RGI
 
 from acanalysis.acalignment.keypoints import KeyPoint,write_keypoints_to_file
 from acanalysis.acalignment.utils.swc_utils import read_neurons_from_file,ori_table
-
+from acanalysis.acalignment.utils.h5_utils import query_skeletons_by_bb
 
 def ori_lookup(ori):
     return ori_table(ori)
@@ -71,23 +71,27 @@ def keypoint_from_neuron(neuron,name='',ori=None,swcmip=0):
     return KeyPoint(name=name,location=location,vector=vector)
 
 
-# def filter_skeletons(neurons,names=None,ids=None,mincablelength=None,minradius=None,**kwargs):
-#     filtered = []
-#     for n in neurons:
-#         good = True
-#         if not names is None:
-#             good = n.name in names
-#         if not ids is None:
-#             good = n.id in ids
-#         if not mincablelength is None:
-#             good = n.cable_length >= mincablelength
-#         if not minradius is None:
-#             good = n.nodes.radius.mean() >= minradius
-#         if good:
-#             filtered.append(n)
-#     if filtered:
-#         return navis.NeuronList(filtered)
-#     return None
+
+def filter_skeletons(skels,names=None,ids=None,mincablelength=None,minradius=None,swap_xyz=None,**kwargs):
+    filtered = []
+    for skel in skels:
+        n = navis.TreeNeuron(skel.to_swc())
+        good = True
+        if not names is None:
+            good = n.name in names
+        if not ids is None:
+            good = n.id in ids
+        if not mincablelength is None:
+            good = n.cable_length >= mincablelength
+        if not minradius is None:
+            good = n.nodes.radius.mean() >= minradius
+        if good:
+            if not swap_xyz is None and swap_xyz:
+                n.nodes[["x","y","z"]] = n.nodes[swap_xyz]
+            filtered.append(n)
+    if filtered:
+        return navis.NeuronList(filtered)
+    return None
 
 
 def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,surf_grid=None,roi_coords=None,**kwargs):
@@ -149,8 +153,8 @@ def filter_surface_keypoints(keypts,distance=0,ori=None,surf_map=None,surf_grid=
     print(str(len(SurfList)) + " surface points")
     return SurfList
 
-    
-def generate_keypoint_file(swcpath,
+
+def generate_keypoint_file_old(swcpath,
                            outputpath,
                            is_tar=False,
                            swcmip=0,
@@ -206,3 +210,53 @@ def generate_keypoint_file(swcpath,
     write_keypoints_to_file(surfkeypts,outputpath)
     print("saved keypoints to " + str(outputpath))
 
+    
+def generate_keypoint_file(indir,
+                           outputpath,
+                           swcmip=0,
+                           ori=None,
+                           swap_xyz=[],
+                           tile_name='',
+                           z_range=None,
+                           y_range=None,
+                           x_range=None,
+                           **kwargs):
+    """write json file containing list of keypoints generated from all skeletons
+    
+    Parameters
+    ----------
+    swcpath : Path or Path str
+        path to .swc or .gz.tar file containing skeletons
+    outputpath : Path or Path str
+        path for output json
+    is_tar : bool
+        flag for loading .gz.tar archive
+    swcmip : int
+        mip level of skeletons relative to image data
+    ori : str
+        character string defining section surface axis and direction
+    swap_xyz : list of str
+        permutation of axes to swap (is this needed?)
+    tile_name : str
+        optional tile id to add as prefix to keypoint names
+    surf_file : Path or Path str
+        path to .npy file containing surface map
+
+    Returns
+    ------
+    KeyPoint : keypoints.KeyPoint
+        dataclass storing name, 3D surface location, and 3D impact vector
+    """
+
+    print(f"reading from {indir}")
+    bb = (z_range[0],y_range[0],x_range[0],z_range[1],y_range[1],x_range[1])
+    skels, shards = query_skeletons_by_bb(bb, indir, n_workers=15)
+    print(f"{len(skels)} in bb")
+    neurons = filter_skeletons(skels,**kwargs)
+    print(f"{neurons.shape[0]} filtered")
+    keypts = [keypoint_from_neuron(neuron,name=tile_name+str(neuron.id),ori=ori,swcmip=swcmip) for neuron in neurons]
+    print(len(keypts))
+    write_keypoints_to_file(keypts,outputpath)
+    surfkeypts = filter_surface_keypoints(keypts,ori=ori,surf_map=surf,surf_grid=offset,**kwargs)
+    write_keypoints_to_file(surfkeypts,outputpath)
+    print("saved keypoints to " + str(outputpath))

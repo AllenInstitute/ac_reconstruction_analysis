@@ -2,10 +2,15 @@ numpy
 navis
 argschema
 scikit-image
+matplotlib
+pyvista
+fiberorient
+scipy
 render-python
 python-catmaid
-pytest==6.2.5
 neuroglancer
 mpyicbg
 zarr
-cloud-volume>=8.5.5
+pathos
+natsort
+cloud-volume>=11.0.0,<12.0.0

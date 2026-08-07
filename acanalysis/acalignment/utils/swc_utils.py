@@ -49,18 +49,47 @@ def write_kimi_skels_tar(tar_fn, skels):
             info = tarfile.TarInfo(name=f"{skid}.swc")
             info.size = len(bio.getbuffer())
             t.addfile(tarinfo=info, fileobj=bio)
+            
+def write_navis_skels_tar(tar_fn, skels, mode='w:gz', swcname=False):
+    with tarfile.open(tar_fn, mode=mode) as t:
+        for sk in skels:
+            id = sk.id
+            if swcname:
+                id = sk.swcname
+            if 'label' not in sk.nodes:
+                sk.nodes.insert(1, 'label', list(np.zeros(len(sk.nodes))))
+            sk = sk.nodes[['node_id', 'label','x','y','z','radius','parent_id']].values.tolist()
+            sk = '\n'.join(str(x)[1:-1] for x in sk).replace(",", "")
+            bio = BytesIO(sk.encode())
+            info = tarfile.TarInfo(name=f"{id}.swc")
+            info.size = len(bio.getbuffer())
+            t.addfile(tarinfo=info, fileobj=bio)
 
 
-def read_navis_neurons_tar(tar_fn, concurrency=10, preprocess_func=None):
+def process_swc_file(swc_data, swcname, file_id):
+    neuron = navis.io.read_swc(f=swc_data, swcname=swcname)
+    neuron.id = file_id
+    return neuron
+
+def read_navis_neurons_tar(tar_fn, concurrency=10, preprocess_func=None, uuid=True):
     preprocess_func = ((lambda x: x) if preprocess_func is None else preprocess_func)
     with concurrent.futures.ProcessPoolExecutor(max_workers=concurrency) as e:
         futs = []
         with tarfile.open(tar_fn, "r:gz") as t:
             for m in t.getmembers():
+                # Extract the SWC file contents
                 swc_b = t.extractfile(m).read()
-                futs.append(e.submit(navis.io.read_swc,f=swc_b.decode(),swcname=m.name))
-        neurons = [preprocess_func(fut.result()) for
-            fut in concurrent.futures.as_completed(futs)]
+                file_id = m.name.split('.')[0]
+                try:
+                    file_id = int(file_id)
+                except:
+                    pass
+                if uuid:
+                    futs.append(e.submit(navis.io.read_swc,f=swc_b.decode(),swcname=file_id))
+                else:
+                    futs.append(e.submit(process_swc_file, swc_b.decode(), file_id, file_id))
+                
+        neurons = [preprocess_func(fut.result()) for fut in concurrent.futures.as_completed(futs)]
         navis_neurons = navis.NeuronList([n for n in neurons if not n is None])
     return navis_neurons
 
