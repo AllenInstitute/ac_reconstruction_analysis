@@ -104,7 +104,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-=======
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -219,5 +218,4 @@ venv.bak/
 
 # version file used by scm_version
 _version.py
-
 

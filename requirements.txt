@@ -8,7 +8,6 @@ fiberorient
 scipy
 render-python
 python-catmaid
-# pytest==6.2.5
 neuroglancer
 mpyicbg
 zarr
