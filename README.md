@@ -20,7 +20,7 @@ acanalysis.acalignment
 
 ***Note***: There are two detection methods: the first relies on an arbitrarily defined minimum collinearity and maximum Euclidian distance between skeletons; the second relies on a pre-trained classifier. The classifier requires model and scalar files, both of which can be found in acanalysis/test/model. This difference is defined by the "method" parameter across all methods.
 ```
-python acanalysis/skeleton_reconstruction/reconnection/find_pairs.py \
+python -m acanalysis.skeleton_reconstruction.reconnection.find_pairs \
 --skels DIRECTORY_TO_INPUT_SKELETON_VOLUME \
 --out_file PATH_TO_OUTPUT_PAIRS_FILES \
 --cl PATH_TO_MODEL_FILE \
@@ -32,7 +32,7 @@ python acanalysis/skeleton_reconstruction/reconnection/find_pairs.py \
 
 **Build Connected Components from Pairs**
 ```
-python acanalysis/skeleton_reconstruction/reconnection/create_components.py \
+python -m acanalysis.skeleton_reconstruction.reconnection.create_components \
 --pair_files PATH_TO_PAIRS_FILE or DIRECTORY_TO_PAIR_FILES \
 --components_per_file NUMBER_CONNECTED_COMPONENTS_PER_FILE \
 --method PAIR_FINDING_METHOD \
@@ -41,7 +41,7 @@ python acanalysis/skeleton_reconstruction/reconnection/create_components.py \
 
 **Merge Skeletons**
 ```
-python acanalysis/skeleton_reconstruction/reconnection/merge_pairs.py \
+python -m acanalysis.skeleton_reconstruction.reconnection.merge_pairs \
 --skels DIRECTORY_TO_INPUT_SKELETON_VOLUME  \
 --pair_file PATH_TO_COMPONENTS_FILE \
 --prob_thresh  MINIMUM_PROBABILITY_THRESHOLD *using pre-trained model \
