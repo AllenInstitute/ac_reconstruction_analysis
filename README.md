@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/621473053.svg)](https://doi.org/10.5281/zenodo.22151028)
 # ac_reconstruction_analysis
 Analysis and alignment of axonal connectomics datasets based on skeletonized axonal reconstructions. 
 
